@@ -1,0 +1,34 @@
+{
+  "name": "1task-landing-page-with-poll",
+  "version": "0.0.1",
+  "description": "1task's landing page, with a poll.",
+  "scripts": {
+    "build": "webpack ./src/index.js ./bundle.js --progress --colors",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adrienjoly/1task.git"
+  },
+  "keywords": [
+    "task management"
+  ],
+  "author": "Adrien Joly <contact@adrienjoly.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/adrienjoly/1task/issues"
+  },
+  "homepage": "https://github.com/adrienjoly/1task#readme",
+  "devDependencies": {
+    "material-ui": "^0.13.1",
+    "react": "^0.14.1",
+    "react-1poll": "0.0.2",
+    "react-addons-create-fragment": "^0.14.1",
+    "react-addons-pure-render-mixin": "^0.14.1",
+    "react-addons-transition-group": "^0.14.1",
+    "react-addons-update": "^0.14.1",
+    "react-dom": "^0.14.1",
+    "react-tap-event-plugin": "^0.2.1",
+    "webpack": "^1.12.2"
+  }
+}
