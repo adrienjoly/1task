@@ -15,6 +15,8 @@
 
   var appDiv = document.getElementById('app');
 
+  // TODO: persist user-generated problems, or re-use by other users
+
   var props = {
     options: [
       { name: 'Tasks accumulate too much' },
@@ -24,14 +26,12 @@
     onSubmit: function(evt) {
       var selected = [];
       var form = document.getElementsByTagName('form')[0];
-      console.log('preparing form...', form);
       for (var i=0; i<form.elements.length; ++i) {
         if (form.elements[i].name == 'selected' && form.elements[i].checked) {
           selected.push(form.elements[i].value);
         }
       }
       document.getElementById('js-merged-problems').value = selected.join('\n');
-      console.log('submitting form...', form);
       form.submit();
     }
   };
