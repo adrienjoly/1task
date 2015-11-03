@@ -9,6 +9,8 @@ module.exports = (function(){
 
     getInitialState() {
       return {
+        value: '',
+        focus: false,
         valid: false
       };
     },
@@ -20,15 +22,22 @@ module.exports = (function(){
         valid: this.state.valid,
         'aria-required': this.props.required,
         hintText: this.props.hintText,
-        errorText: this.state.valid ? '' : 'Please enter a valid email address',
+        errorText: this._hasToShowHint() ? 'Please enter a valid email address' : '',
         onChange: this._handleChange,
         onEnterKeyDown: this.state.valid ? this.props.onValidSubmit : undefined,
         style: this.props.style || { margin: '20px 0' }
       });
     },
 
+    _hasToShowHint() {
+      return this.state.value.length && !this.state.valid;
+    },
+
     _handleChange(evt) {
-      this.setState({ valid: REGEX.test(evt.target.value) }, this.props.onValidation);
+      this.setState({
+        value: evt.target.value,
+        valid: REGEX.test(evt.target.value)
+      }, this.props.onValidation);
     },
 
   });
