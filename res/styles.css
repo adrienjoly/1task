@@ -152,11 +152,18 @@ section {
 }
 
 .loading-state {
+  display: none;
+}
+
+body.is-loading .loading-state {
+  display: block;
   position: fixed;
-  top: 0;
-  bottom: 0;
+  bottom: 40px;
   width: 100%;
-  background: url(/res/loading.gif) 50% 45% no-repeat;
+  height: 40px;
+  /* loading animation by Skip Hursh: https://www.behance.net/gallery/10395367/Digg-Reader */
+  background: url(/res/loading.gif) 50% 50% no-repeat;
+  background-size: contain;
 }
 
 .rel {
