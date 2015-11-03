@@ -14,6 +14,7 @@ module.exports = (function(){
 
     getInitialState() {
       return {
+        disabled: false,
         validEmail: false
       };
     },
@@ -43,6 +44,7 @@ module.exports = (function(){
           ),
           React.createElement('div', { className: 'mt-td--centered-vertical site-user-signup__col-2' },
             React.createElement(RaisedButton, {
+              disabled: this.state.disabled,
               label: 'Submit',
               primary: true,
               backgroundColor: '#00a651',

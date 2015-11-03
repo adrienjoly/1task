@@ -19740,6 +19740,7 @@
 
 	    render() {
 	      return React.createElement(PollForm, {
+	        ref: 'pollForm',
 	        options: this.state.options,
 	        onNewOption: this.onNewOption,
 	        onValidSubmit: this.onValidSubmit
@@ -19755,7 +19756,7 @@
 	    onValidSubmit() {
 	      var form = this.props.form;
 	      var selectedItems = getSelectedItems(form);
-	      // TODO: disable form
+	      this.refs.pollForm.setState({ disabled: true });
 	      this.props.setLoading(true);
 	      itemStore.syncItems(selectedItems, function() {
 	        form.submit(selectedItems);
@@ -19791,6 +19792,7 @@
 
 	    getInitialState() {
 	      return {
+	        disabled: false,
 	        validEmail: false
 	      };
 	    },
@@ -19820,6 +19822,7 @@
 	          ),
 	          React.createElement('div', { className: 'mt-td--centered-vertical site-user-signup__col-2' },
 	            React.createElement(RaisedButton, {
+	              disabled: this.state.disabled,
 	              label: 'Submit',
 	              primary: true,
 	              backgroundColor: '#00a651',
