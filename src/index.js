@@ -3,41 +3,44 @@
   
   var React = require('react');
   var ReactDOM = require('react-dom');
-  var injectTapEventPlugin = require('react-tap-event-plugin');
-  var Poll = require('react-1poll');
+  var Paper = require('material-ui/lib/paper');
+  var PollForm = require('./PollForm.js');
+
+  // TODO: minify compiled bundle (e.g. use uglify)
 
   // Needed for React Developer Tools
   window.React = React;
 
-  // Needed for onTouchTap
-  // Can go away when react 1.0 release, cf https://github.com/zilverline/react-tap-event-plugin
-  injectTapEventPlugin();
-
   var appDiv = document.getElementById('app');
 
-  // TODO: persist user-generated problems, or re-use by other users
+  function getSelectedItems(form) {
+    var selected = [];
+    for (var i=0; i<form.elements.length; ++i) {
+      if (form.elements[i].name == 'selected' && form.elements[i].checked) {
+        selected.push(form.elements[i].value);
+      }
+    }
+    return selected;
+  }
 
-  var props = {
+  var pollForm = React.createElement(PollForm, {
     options: [
       { name: 'Tasks accumulate too much' },
       { name: 'I don\'t know where to start' },
       { name: 'I keep postponing my deadlines' }
+      // TODO: persist user-generated problems, or re-use by other users
     ],
-    onSubmit: function(evt) {
-      var selected = [];
+    onValidSubmit: function onSubmit() {
+      console.log('valid submit :-)')
       var form = document.getElementsByTagName('form')[0];
-      for (var i=0; i<form.elements.length; ++i) {
-        if (form.elements[i].name == 'selected' && form.elements[i].checked) {
-          selected.push(form.elements[i].value);
-        }
-      }
+      var selected = getSelectedItems(form);
       document.getElementById('js-merged-problems').value = selected.join('\n');
       form.submit();
     }
-  };
+  });
 
   // Render the main app react component into the app div.
   // For more details see: https://facebook.github.io/react/docs/top-level-api.html#react.render
-  ReactDOM.render(React.createElement(Poll, props), appDiv);
+  ReactDOM.render(pollForm, appDiv);
 
 })();

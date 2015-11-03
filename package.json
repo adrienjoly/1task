@@ -22,7 +22,7 @@
   "devDependencies": {
     "material-ui": "^0.13.1",
     "react": "^0.14.1",
-    "react-1poll": "0.0.2",
+    "react-1poll": "0.0.3",
     "react-addons-create-fragment": "^0.14.1",
     "react-addons-pure-render-mixin": "^0.14.1",
     "react-addons-transition-group": "^0.14.1",
