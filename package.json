@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/adrienjoly/1task#readme",
   "devDependencies": {
-    "react-1poll": "0.0.5",
+    "react-1poll": "0.0.7",
     "webpack": "^1.12.2"
   }
 }

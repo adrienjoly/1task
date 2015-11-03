@@ -14,8 +14,7 @@ module.exports = (function(){
 
     getInitialState() {
       return {
-        validEmail: false,
-        options: []
+        validEmail: false
       };
     },
 
@@ -23,7 +22,8 @@ module.exports = (function(){
       return React.createElement('div', { className: 'react-poll-form' },
         React.createElement(Poll, {
           options: this.props.options,
-          labelStyle: { color: 'auto' }
+          labelStyle: { color: 'auto' },
+          onNewOption: this.props.onNewOption
         }),
         React.createElement('p', {}, 'We\'ll let you know when we\'ve solved these problems:'),
         React.createElement('div', { className: 'mt-table--full' },
