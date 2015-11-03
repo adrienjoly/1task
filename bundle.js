@@ -19770,11 +19770,15 @@
 	                display: 'block', // to fill the parent div's width, as defined by the className above
 	                margin: '16px 8px'
 	              },
-	              onTouchTap: this.state.validEmail ? this.props.onValidSubmit : undefined
+	              onTouchTap: this.state.validEmail ? this.props.onValidSubmit : this.onInvalidSubmit
 	            })
 	          )
 	        )
 	      );
+	    },
+
+	    onInvalidSubmit() {
+	      this.refs.email.setState({ forceHint: true });
 	    },
 
 	    onEmailValidation() {
@@ -23650,6 +23654,7 @@
 
 	    getInitialState() {
 	      return {
+	        forceHint: false,
 	        value: '',
 	        focus: false,
 	        valid: false
@@ -23671,11 +23676,12 @@
 	    },
 
 	    _hasToShowHint() {
-	      return this.state.value.length && !this.state.valid;
+	      return this.state.forceHint || (this.state.value.length && !this.state.valid);
 	    },
 
 	    _handleChange(evt) {
 	      this.setState({
+	        forceHint: false,
 	        value: evt.target.value,
 	        valid: REGEX.test(evt.target.value)
 	      }, this.props.onValidation);

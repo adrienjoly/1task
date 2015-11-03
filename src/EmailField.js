@@ -9,6 +9,7 @@ module.exports = (function(){
 
     getInitialState() {
       return {
+        forceHint: false,
         value: '',
         focus: false,
         valid: false
@@ -30,11 +31,12 @@ module.exports = (function(){
     },
 
     _hasToShowHint() {
-      return this.state.value.length && !this.state.valid;
+      return this.state.forceHint || (this.state.value.length && !this.state.valid);
     },
 
     _handleChange(evt) {
       this.setState({
+        forceHint: false,
         value: evt.target.value,
         valid: REGEX.test(evt.target.value)
       }, this.props.onValidation);

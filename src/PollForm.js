@@ -50,11 +50,15 @@ module.exports = (function(){
                 display: 'block', // to fill the parent div's width, as defined by the className above
                 margin: '16px 8px'
               },
-              onTouchTap: this.state.validEmail ? this.props.onValidSubmit : undefined
+              onTouchTap: this.state.validEmail ? this.props.onValidSubmit : this.onInvalidSubmit
             })
           )
         )
       );
+    },
+
+    onInvalidSubmit() {
+      this.refs.email.setState({ forceHint: true });
     },
 
     onEmailValidation() {
