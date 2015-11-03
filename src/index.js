@@ -3,10 +3,9 @@
   
   var React = require('react');
   var ReactDOM = require('react-dom');
-  var Paper = require('material-ui/lib/paper');
   var PollForm = require('./PollForm.js');
 
-  // TODO: minify compiled bundle (e.g. use uglify)
+  // TODO: minify compiled bundle (e.g. use uglify), for production
 
   // Needed for React Developer Tools
   window.React = React;
@@ -31,11 +30,14 @@
       // TODO: persist user-generated problems, or re-use by other users
     ],
     onValidSubmit: function onSubmit() {
-      console.log('valid submit :-)')
       var form = document.getElementsByTagName('form')[0];
-      var selected = getSelectedItems(form);
-      document.getElementById('js-merged-problems').value = selected.join('\n');
+      document.getElementById('js-merged-problems').value = getSelectedItems(form).join('\n');
       form.submit();
+      /* AJAX code for testing with devtools' network tab:
+      var xhr = new XMLHttpRequest;
+      xhr.open('POST', '/', true);
+      xhr.send(new FormData(form));
+      */
     }
   });
 

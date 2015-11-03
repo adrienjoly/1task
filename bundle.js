@@ -49,10 +49,9 @@
 	  
 	  var React = __webpack_require__(1);
 	  var ReactDOM = __webpack_require__(158);
-	  var Paper = __webpack_require__(159);
-	  var PollForm = __webpack_require__(179);
+	  var PollForm = __webpack_require__(159);
 
-	  // TODO: minify compiled bundle (e.g. use uglify)
+	  // TODO: minify compiled bundle (e.g. use uglify), for production
 
 	  // Needed for React Developer Tools
 	  window.React = React;
@@ -77,11 +76,14 @@
 	      // TODO: persist user-generated problems, or re-use by other users
 	    ],
 	    onValidSubmit: function onSubmit() {
-	      console.log('valid submit :-)')
 	      var form = document.getElementsByTagName('form')[0];
-	      var selected = getSelectedItems(form);
-	      document.getElementById('js-merged-problems').value = selected.join('\n');
+	      document.getElementById('js-merged-problems').value = getSelectedItems(form).join('\n');
 	      form.submit();
+	      /* AJAX code for testing with devtools' network tab:
+	      var xhr = new XMLHttpRequest;
+	      xhr.open('POST', '/', true);
+	      xhr.send(new FormData(form));
+	      */
 	    }
 	  });
 
@@ -4435,11 +4437,12 @@
 	    var fakeNode = document.createElement('react');
 	    ReactErrorUtils.invokeGuardedCallback = function (name, func, a, b) {
 	      var boundFunc = func.bind(null, a, b);
-	      fakeNode.addEventListener(name, boundFunc, false);
+	      var evtType = 'react-' + name;
+	      fakeNode.addEventListener(evtType, boundFunc, false);
 	      var evt = document.createEvent('Event');
-	      evt.initEvent(name, false, false);
+	      evt.initEvent(evtType, false, false);
 	      fakeNode.dispatchEvent(evt);
-	      fakeNode.removeEventListener(name, boundFunc, false);
+	      fakeNode.removeEventListener(evtType, boundFunc, false);
 	    };
 	  }
 	}
@@ -5034,7 +5037,7 @@
 	var canDefineProperty = false;
 	if (process.env.NODE_ENV !== 'production') {
 	  try {
-	    Object.defineProperty({}, 'x', {});
+	    Object.defineProperty({}, 'x', { get: function () {} });
 	    canDefineProperty = true;
 	  } catch (x) {
 	    // IE will fail on defineProperty
@@ -10468,6 +10471,7 @@
 	    icon: null,
 	    id: MUST_USE_PROPERTY,
 	    inputMode: MUST_USE_ATTRIBUTE,
+	    integrity: null,
 	    is: MUST_USE_ATTRIBUTE,
 	    keyParams: MUST_USE_ATTRIBUTE,
 	    keyType: MUST_USE_ATTRIBUTE,
@@ -10827,6 +10831,7 @@
 	// For quickly matching children type, to test if can be treated as content.
 	var CONTENT_TYPES = { 'string': true, 'number': true };
 
+	var CHILDREN = keyOf({ children: null });
 	var STYLE = keyOf({ style: null });
 	var HTML = keyOf({ __html: null });
 
@@ -11317,7 +11322,9 @@
 	        }
 	        var markup = null;
 	        if (this._tag != null && isCustomComponent(this._tag, props)) {
-	          markup = DOMPropertyOperations.createMarkupForCustomAttribute(propKey, propValue);
+	          if (propKey !== CHILDREN) {
+	            markup = DOMPropertyOperations.createMarkupForCustomAttribute(propKey, propValue);
+	          }
 	        } else {
 	          markup = DOMPropertyOperations.createMarkupForProperty(propKey, propValue);
 	        }
@@ -11576,6 +11583,9 @@
 	      } else if (isCustomComponent(this._tag, nextProps)) {
 	        if (!node) {
 	          node = ReactMount.getNode(this._rootNodeID);
+	        }
+	        if (propKey === CHILDREN) {
+	          nextProp = null;
 	        }
 	        DOMPropertyOperations.setValueForAttribute(node, propKey, nextProp);
 	      } else if (DOMProperty.properties[propKey] || DOMProperty.isCustomAttribute(propKey)) {
@@ -18697,7 +18707,7 @@
 
 	'use strict';
 
-	module.exports = '0.14.1';
+	module.exports = '0.14.2';
 
 /***/ },
 /* 147 */
@@ -19672,6 +19682,71 @@
 /* 159 */
 /***/ function(module, exports, __webpack_require__) {
 
+	module.exports = (function(){
+	  'use strict';
+	  var React = __webpack_require__(1);
+	  var RaisedButton = __webpack_require__(160);
+	  var injectTapEventPlugin = __webpack_require__(197);
+	  var EmailField = __webpack_require__(201);
+	  var Poll = __webpack_require__(207);
+
+	  // Needed for onTouchTap
+	  // Can go away when react 1.0 release, cf https://github.com/zilverline/react-tap-event-plugin
+	  injectTapEventPlugin();
+
+	  var PollForm = React.createClass({
+
+	    getInitialState() {
+	      return {
+	        validEmail: false,
+	        options: []
+	      };
+	    },
+
+	    render() {
+	      var paperProps = {
+	        style: {
+	          backgroundColor: 'white',
+	          padding: '16px',
+	          paddingTop: '1px'
+	        }
+	      };
+	      return React.createElement('div', paperProps,
+	        React.createElement(Poll, {
+	          options: this.props.options
+	        }),
+	        React.createElement(EmailField, {
+	          ref: 'email',
+	          name: 'EMAIL',
+	          hintText: 'Email',
+	          required: true,
+	          onValidation: this.onEmailValidation,
+	          style: { margin: '20px 0' }
+	        }),
+	        React.createElement(RaisedButton, {
+	          label: 'Submit',
+	          primary: true,
+	          style: { display: 'block' },
+	          onTouchTap: this.state.validEmail ? this.props.onValidSubmit : undefined
+	        })
+	      );
+	    },
+
+	    onEmailValidation() {
+	      this.setState({ validEmail: this.refs.email.state.valid });
+	    }
+
+	  });
+
+	  return PollForm;
+
+	})();
+
+
+/***/ },
+/* 160 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -19679,17 +19754,26 @@
 	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
 	var React = __webpack_require__(1);
-	var PureRenderMixin = __webpack_require__(160);
-	var StylePropable = __webpack_require__(163);
-	var PropTypes = __webpack_require__(171);
-	var Transitions = __webpack_require__(172);
-	var DefaultRawTheme = __webpack_require__(173);
-	var ThemeManager = __webpack_require__(177);
+	var ReactDOM = __webpack_require__(158);
+	var StylePropable = __webpack_require__(161);
+	var Transitions = __webpack_require__(169);
+	var ColorManipulator = __webpack_require__(170);
+	var Typography = __webpack_require__(171);
+	var EnhancedButton = __webpack_require__(173);
+	var Paper = __webpack_require__(195);
+	var DefaultRawTheme = __webpack_require__(188);
+	var ThemeManager = __webpack_require__(190);
 
-	var Paper = React.createClass({
-	  displayName: 'Paper',
+	function validateLabel(props, propName, componentName) {
+	  if (!props.children && !props.label) {
+	    return new Error('Required prop label or children was not ' + 'specified in ' + componentName + '.');
+	  }
+	}
 
-	  mixins: [PureRenderMixin, StylePropable],
+	var RaisedButton = React.createClass({
+	  displayName: 'RaisedButton',
+
+	  mixins: [StylePropable],
 
 	  contextTypes: {
 	    muiTheme: React.PropTypes.object
@@ -19706,168 +19790,235 @@
 	    };
 	  },
 
+	  propTypes: {
+	    className: React.PropTypes.string,
+	    disabled: React.PropTypes.bool,
+	    label: validateLabel,
+	    onMouseDown: React.PropTypes.func,
+	    onMouseUp: React.PropTypes.func,
+	    onMouseLeave: React.PropTypes.func,
+	    onTouchEnd: React.PropTypes.func,
+	    onTouchStart: React.PropTypes.func,
+	    primary: React.PropTypes.bool,
+	    secondary: React.PropTypes.bool,
+	    labelStyle: React.PropTypes.object,
+	    backgroundColor: React.PropTypes.string,
+	    labelColor: React.PropTypes.string,
+	    disabledBackgroundColor: React.PropTypes.string,
+	    disabledLabelColor: React.PropTypes.string,
+	    fullWidth: React.PropTypes.bool
+	  },
+
 	  getInitialState: function getInitialState() {
+	    var zDepth = this.props.disabled ? 0 : 1;
 	    return {
+	      hovered: false,
+	      touched: false,
+	      initialZDepth: zDepth,
+	      zDepth: zDepth,
 	      muiTheme: this.context.muiTheme ? this.context.muiTheme : ThemeManager.getMuiTheme(DefaultRawTheme)
 	    };
 	  },
 
-	  //to update theme inside state whenever a new theme is passed down
-	  //from the parent / owner using context
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps, nextContext) {
+	    var zDepth = nextProps.disabled ? 0 : 1;
 	    var newMuiTheme = nextContext.muiTheme ? nextContext.muiTheme : this.state.muiTheme;
-	    this.setState({ muiTheme: newMuiTheme });
+	    this.setState({
+	      zDepth: zDepth,
+	      initialZDepth: zDepth,
+	      muiTheme: newMuiTheme
+	    });
 	  },
 
-	  propTypes: {
-	    circle: React.PropTypes.bool,
-	    rounded: React.PropTypes.bool,
-	    transitionEnabled: React.PropTypes.bool,
-	    zDepth: PropTypes.zDepth
+	  _getBackgroundColor: function _getBackgroundColor() {
+	    var disabledColor = this.props.disabledBackgroundColor ? this.props.disabledBackgroundColor : this.getTheme().disabledColor;
+
+	    return this.props.disabled ? disabledColor : this.props.backgroundColor ? this.props.backgroundColor : this.props.primary ? this.getTheme().primaryColor : this.props.secondary ? this.getTheme().secondaryColor : this.getTheme().color;
 	  },
 
-	  getDefaultProps: function getDefaultProps() {
-	    return {
-	      circle: false,
-	      rounded: true,
-	      transitionEnabled: true,
-	      zDepth: 1
+	  _getLabelColor: function _getLabelColor() {
+	    var disabledColor = this.props.disabledLabelColor ? this.props.disabledLabelColor : this.getTheme().disabledTextColor;
+
+	    return this.props.disabled ? disabledColor : this.props.labelColor ? this.props.labelColor : this.props.primary ? this.getTheme().primaryTextColor : this.props.secondary ? this.getTheme().secondaryTextColor : this.getTheme().textColor;
+	  },
+
+	  getThemeButton: function getThemeButton() {
+	    return this.state.muiTheme.button;
+	  },
+
+	  getTheme: function getTheme() {
+	    return this.state.muiTheme.raisedButton;
+	  },
+
+	  getStyles: function getStyles() {
+
+	    var amount = this.props.primary || this.props.secondary ? 0.4 : 0.08;
+	    var styles = {
+	      root: {
+	        backgroundColor: 'none',
+	        display: 'inline-block',
+	        minWidth: this.props.fullWidth ? '100%' : this.getThemeButton().minWidth,
+	        height: this.getThemeButton().height,
+	        transition: Transitions.easeOut()
+	      },
+	      container: {
+	        position: 'relative',
+	        height: '100%',
+	        width: '100%',
+	        padding: 0,
+	        overflow: 'hidden',
+	        borderRadius: 2,
+	        transition: Transitions.easeOut(),
+	        backgroundColor: this._getBackgroundColor(),
+
+	        //This is need so that ripples do not bleed
+	        //past border radius.
+	        //See: http://stackoverflow.com/questions/17298739/css-overflow-hidden-not-working-in-chrome-when-parent-has-border-radius-and-chil
+	        transform: 'translate3d(0, 0, 0)'
+	      },
+	      label: {
+	        position: 'relative',
+	        opacity: 1,
+	        fontSize: '14px',
+	        letterSpacing: 0,
+	        textTransform: this.getTheme().textTransform ? this.getTheme().textTransform : this.getThemeButton().textTransform ? this.getThemeButton().textTransform : 'uppercase',
+	        fontWeight: Typography.fontWeightMedium,
+	        margin: 0,
+	        padding: '0px ' + this.state.muiTheme.rawTheme.spacing.desktopGutterLess + 'px',
+	        userSelect: 'none',
+	        lineHeight: this.props.style && this.props.style.height ? this.props.style.height : this.getThemeButton().height + 'px',
+	        color: this._getLabelColor()
+	      },
+	      overlay: {
+	        transition: Transitions.easeOut(),
+	        top: 0
+	      },
+	      overlayWhenHovered: {
+	        backgroundColor: ColorManipulator.fade(this._getLabelColor(), amount)
+	      }
 	    };
+	    return styles;
 	  },
 
 	  render: function render() {
 	    var _props = this.props;
-	    var children = _props.children;
-	    var circle = _props.circle;
-	    var rounded = _props.rounded;
-	    var style = _props.style;
-	    var transitionEnabled = _props.transitionEnabled;
-	    var zDepth = _props.zDepth;
+	    var disabled = _props.disabled;
+	    var label = _props.label;
+	    var primary = _props.primary;
+	    var secondary = _props.secondary;
 
-	    var other = _objectWithoutProperties(_props, ['children', 'circle', 'rounded', 'style', 'transitionEnabled', 'zDepth']);
+	    var other = _objectWithoutProperties(_props, ['disabled', 'label', 'primary', 'secondary']);
 
-	    var styles = {
-	      backgroundColor: this.state.muiTheme.paper.backgroundColor,
-	      transition: transitionEnabled && Transitions.easeOut(),
-	      boxSizing: 'border-box',
-	      fontFamily: this.state.muiTheme.rawTheme.fontFamily,
-	      WebkitTapHighlightColor: 'rgba(0,0,0,0)',
-	      boxShadow: this._getZDepthShadows(zDepth),
-	      borderRadius: circle ? '50%' : rounded ? '2px' : '0px'
+	    var styles = this.getStyles();
+
+	    var labelElement = undefined;
+	    if (label) {
+	      labelElement = React.createElement(
+	        'span',
+	        { style: this.prepareStyles(styles.label, this.props.labelStyle) },
+	        label
+	      );
+	    }
+
+	    var rippleColor = styles.label.color;
+	    var rippleOpacity = !(primary || secondary) ? 0.1 : 0.16;
+
+	    var buttonEventHandlers = disabled ? null : {
+	      onMouseDown: this._handleMouseDown,
+	      onMouseUp: this._handleMouseUp,
+	      onMouseLeave: this._handleMouseLeave,
+	      onMouseEnter: this._handleMouseEnter,
+	      onTouchStart: this._handleTouchStart,
+	      onTouchEnd: this._handleTouchEnd,
+	      onKeyboardFocus: this._handleKeyboardFocus
 	    };
 
 	    return React.createElement(
-	      'div',
-	      _extends({}, other, { style: this.prepareStyles(styles, style) }),
-	      children
+	      Paper,
+	      {
+	        style: this.mergeStyles(styles.root, this.props.style),
+	        zDepth: this.state.zDepth },
+	      React.createElement(
+	        EnhancedButton,
+	        _extends({}, other, buttonEventHandlers, {
+	          ref: 'container',
+	          disabled: disabled,
+	          style: this.mergeStyles(styles.container),
+	          focusRippleColor: rippleColor,
+	          touchRippleColor: rippleColor,
+	          focusRippleOpacity: rippleOpacity,
+	          touchRippleOpacity: rippleOpacity }),
+	        React.createElement(
+	          'div',
+	          { ref: 'overlay', style: this.prepareStyles(styles.overlay, this.state.hovered && !this.props.disabled && styles.overlayWhenHovered) },
+	          labelElement,
+	          this.props.children
+	        )
+	      )
 	    );
 	  },
 
-	  _getZDepthShadows: function _getZDepthShadows(zDepth) {
-	    var shadows = [null, '0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24)', '0 3px 10px rgba(0, 0, 0, 0.16), 0 3px 10px rgba(0, 0, 0, 0.23)', '0 10px 30px rgba(0, 0, 0, 0.19), 0 6px 10px rgba(0, 0, 0, 0.23)', '0 14px 45px rgba(0, 0, 0, 0.25), 0 10px 18px rgba(0, 0, 0, 0.22)', '0 19px 60px rgba(0, 0, 0, 0.30), 0 15px 20px rgba(0, 0, 0, 0.22)'];
+	  _handleMouseDown: function _handleMouseDown(e) {
+	    //only listen to left clicks
+	    if (e.button === 0) {
+	      this.setState({ zDepth: this.state.initialZDepth + 1 });
+	    }
+	    if (this.props.onMouseDown) this.props.onMouseDown(e);
+	  },
 
-	    return shadows[zDepth];
+	  _handleMouseUp: function _handleMouseUp(e) {
+	    this.setState({ zDepth: this.state.initialZDepth });
+	    if (this.props.onMouseUp) this.props.onMouseUp(e);
+	  },
+
+	  _handleMouseLeave: function _handleMouseLeave(e) {
+	    if (!this.refs.container.isKeyboardFocused()) this.setState({ zDepth: this.state.initialZDepth, hovered: false });
+	    if (this.props.onMouseLeave) this.props.onMouseLeave(e);
+	  },
+
+	  _handleMouseEnter: function _handleMouseEnter(e) {
+	    if (!this.refs.container.isKeyboardFocused() && !this.state.touch) {
+	      this.setState({ hovered: true });
+	    }
+	    if (this.props.onMouseEnter) this.props.onMouseEnter(e);
+	  },
+
+	  _handleTouchStart: function _handleTouchStart(e) {
+	    this.setState({
+	      touch: true,
+	      zDepth: this.state.initialZDepth + 1
+	    });
+	    if (this.props.onTouchStart) this.props.onTouchStart(e);
+	  },
+
+	  _handleTouchEnd: function _handleTouchEnd(e) {
+	    this.setState({ zDepth: this.state.initialZDepth });
+	    if (this.props.onTouchEnd) this.props.onTouchEnd(e);
+	  },
+
+	  _handleKeyboardFocus: function _handleKeyboardFocus(e, keyboardFocused) {
+	    if (keyboardFocused && !this.props.disabled) {
+	      this.setState({ zDepth: this.state.initialZDepth + 1 });
+	      var amount = this.props.primary || this.props.secondary ? 0.4 : 0.08;
+	      ReactDOM.findDOMNode(this.refs.overlay).style.backgroundColor = ColorManipulator.fade(this.prepareStyles(this.getStyles().label, this.props.labelStyle).color, amount);
+	    } else if (!this.state.hovered) {
+	      this.setState({ zDepth: this.state.initialZDepth });
+	      ReactDOM.findDOMNode(this.refs.overlay).style.backgroundColor = 'transparent';
+	    }
 	  }
-
 	});
 
-	module.exports = Paper;
-
-/***/ },
-/* 160 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(161);
+	module.exports = RaisedButton;
 
 /***/ },
 /* 161 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactComponentWithPureRenderMixin
-	 */
-
-	'use strict';
-
-	var shallowCompare = __webpack_require__(162);
-
-	/**
-	 * If your React component's render function is "pure", e.g. it will render the
-	 * same result given the same props and state, provide this Mixin for a
-	 * considerable performance boost.
-	 *
-	 * Most React components have pure render functions.
-	 *
-	 * Example:
-	 *
-	 *   var ReactComponentWithPureRenderMixin =
-	 *     require('ReactComponentWithPureRenderMixin');
-	 *   React.createClass({
-	 *     mixins: [ReactComponentWithPureRenderMixin],
-	 *
-	 *     render: function() {
-	 *       return <div className={this.props.className}>foo</div>;
-	 *     }
-	 *   });
-	 *
-	 * Note: This only checks shallow equality for props and state. If these contain
-	 * complex data structures this mixin may have false-negatives for deeper
-	 * differences. Only mixin to components which have simple props and state, or
-	 * use `forceUpdate()` when you know deep data structures have changed.
-	 */
-	var ReactComponentWithPureRenderMixin = {
-	  shouldComponentUpdate: function (nextProps, nextState) {
-	    return shallowCompare(this, nextProps, nextState);
-	  }
-	};
-
-	module.exports = ReactComponentWithPureRenderMixin;
-
-/***/ },
-/* 162 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	* @providesModule shallowCompare
-	*/
-
-	'use strict';
-
-	var shallowEqual = __webpack_require__(117);
-
-	/**
-	 * Does a shallow comparison for props and state.
-	 * See ReactComponentWithPureRenderMixin
-	 */
-	function shallowCompare(instance, nextProps, nextState) {
-	  return !shallowEqual(instance.props, nextProps) || !shallowEqual(instance.state, nextState);
-	}
-
-	module.exports = shallowCompare;
-
-/***/ },
-/* 163 */
-/***/ function(module, exports, __webpack_require__) {
-
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ImmutabilityHelper = __webpack_require__(164);
-	var Styles = __webpack_require__(167);
+	var ImmutabilityHelper = __webpack_require__(162);
+	var Styles = __webpack_require__(165);
 
 	// This mixin isn't necessary and will be removed in v0.11
 
@@ -19905,13 +20056,13 @@
 	};
 
 /***/ },
-/* 164 */
+/* 162 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var update = __webpack_require__(165);
+	var update = __webpack_require__(163);
 
 	function mergeSingle(objA, objB) {
 	  if (!objA) return objB;
@@ -19951,13 +20102,13 @@
 	};
 
 /***/ },
-/* 165 */
+/* 163 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(166);
+	module.exports = __webpack_require__(164);
 
 /***/ },
-/* 166 */
+/* 164 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -20070,13 +20221,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 167 */
+/* 165 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
-	var AutoPrefix = __webpack_require__(168);
-	var ImmutabilityHelper = __webpack_require__(164);
+	var AutoPrefix = __webpack_require__(166);
+	var ImmutabilityHelper = __webpack_require__(162);
 
 	var reTranslate = /((^|\s)translate(3d|X)?\()(\-?[\d]+)/;
 
@@ -20179,14 +20330,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 168 */
+/* 166 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isBrowser = __webpack_require__(169);
+	var isBrowser = __webpack_require__(167);
 
-	var Modernizr = isBrowser ? __webpack_require__(170) : undefined;
+	var Modernizr = isBrowser ? __webpack_require__(168) : undefined;
 
 	//Keep track of already prefixed keys so we can skip Modernizr prefixing
 	var prefixedKeys = {};
@@ -20237,7 +20388,7 @@
 	};
 
 /***/ },
-/* 169 */
+/* 167 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -20245,7 +20396,7 @@
 	module.exports = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
 
 /***/ },
-/* 170 */
+/* 168 */
 /***/ function(module, exports) {
 
 	/* Modernizr 2.8.3 (Custom Build) | MIT & BSD
@@ -20509,32 +20660,12 @@
 	})(window, window.document);
 
 /***/ },
-/* 171 */
+/* 169 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var React = __webpack_require__(1);
-
-	module.exports = {
-
-	  corners: React.PropTypes.oneOf(['bottom-left', 'bottom-right', 'top-left', 'top-right']),
-
-	  cornersAndCenter: React.PropTypes.oneOf(['bottom-center', 'bottom-left', 'bottom-right', 'top-center', 'top-left', 'top-right']),
-
-	  stringOrNumber: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.number]),
-
-	  zDepth: React.PropTypes.oneOf([0, 1, 2, 3, 4, 5])
-
-	};
-
-/***/ },
-/* 172 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var AutoPrefix = __webpack_require__(168);
+	var AutoPrefix = __webpack_require__(166);
 
 	module.exports = {
 
@@ -20569,41 +20700,218 @@
 	};
 
 /***/ },
-/* 173 */
-/***/ function(module, exports, __webpack_require__) {
+/* 170 */
+/***/ function(module, exports) {
 
 	'use strict';
 
-	var Colors = __webpack_require__(174);
-	var ColorManipulator = __webpack_require__(175);
-	var Spacing = __webpack_require__(176);
-
-	/*
-	 *  Light Theme is the default theme used in material-ui. It is guaranteed to
-	 *  have all theme variables needed for every component. Variables not defined
-	 *  in a custom theme will default to these values.
-	 */
-
 	module.exports = {
-	  spacing: Spacing,
-	  fontFamily: 'Roboto, sans-serif',
-	  palette: {
-	    primary1Color: Colors.cyan500,
-	    primary2Color: Colors.cyan700,
-	    primary3Color: Colors.lightBlack,
-	    accent1Color: Colors.pinkA200,
-	    accent2Color: Colors.grey100,
-	    accent3Color: Colors.grey500,
-	    textColor: Colors.darkBlack,
-	    alternateTextColor: Colors.white,
-	    canvasColor: Colors.white,
-	    borderColor: Colors.grey300,
-	    disabledColor: ColorManipulator.fade(Colors.darkBlack, 0.3)
+
+	  /**
+	   * The relative brightness of any point in a colorspace, normalized to 0 for
+	   * darkest black and 1 for lightest white. RGB colors only. Does not take
+	   * into account alpha values.
+	   *
+	   * TODO:
+	   * - Take into account alpha values.
+	   * - Identify why there are minor discrepancies for some use cases
+	   *   (i.e. #F0F & #FFF). Note that these cases rarely occur.
+	   *
+	   * Formula: http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
+	   */
+	  _luminance: function _luminance(color) {
+	    color = this._decomposeColor(color);
+
+	    if (color.type.indexOf('rgb') > -1) {
+	      var rgb = color.values.map(function (val) {
+	        val /= 255; // normalized
+	        return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+	      });
+
+	      return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+	    } else {
+	      var message = 'Calculating the relative luminance is not available for ' + 'HSL and HSLA.';
+	      console.error(message);
+	      return -1;
+	    }
+	  },
+
+	  /**
+	   * @params:
+	   * additionalValue = An extra value that has been calculated but not included
+	   *                   with the original color object, such as an alpha value.
+	   */
+	  _convertColorToString: function _convertColorToString(color, additonalValue) {
+	    var str = color.type + '(' + parseInt(color.values[0]) + ',' + parseInt(color.values[1]) + ',' + parseInt(color.values[2]);
+
+	    if (additonalValue !== undefined) {
+	      str += ',' + additonalValue + ')';
+	    } else if (color.values.length === 4) {
+	      str += ',' + color.values[3] + ')';
+	    } else {
+	      str += ')';
+	    }
+
+	    return str;
+	  },
+
+	  // Converts a color from hex format to rgb format.
+	  _convertHexToRGB: function _convertHexToRGB(color) {
+	    if (color.length === 4) {
+	      var extendedColor = '#';
+	      for (var i = 1; i < color.length; i++) {
+	        extendedColor += color.charAt(i) + color.charAt(i);
+	      }
+	      color = extendedColor;
+	    }
+
+	    var values = {
+	      r: parseInt(color.substr(1, 2), 16),
+	      g: parseInt(color.substr(3, 2), 16),
+	      b: parseInt(color.substr(5, 2), 16)
+	    };
+
+	    return 'rgb(' + values.r + ',' + values.g + ',' + values.b + ')';
+	  },
+
+	  // Returns the type and values of a color of any given type.
+	  _decomposeColor: function _decomposeColor(color) {
+	    if (color.charAt(0) === '#') {
+	      return this._decomposeColor(this._convertHexToRGB(color));
+	    }
+
+	    var marker = color.indexOf('(');
+	    var type = color.substring(0, marker);
+	    var values = color.substring(marker + 1, color.length - 1).split(',');
+
+	    return { type: type, values: values };
+	  },
+
+	  // Set the absolute transparency of a color.
+	  // Any existing alpha values are overwritten.
+	  fade: function fade(color, amount) {
+	    color = this._decomposeColor(color);
+	    if (color.type === 'rgb' || color.type === 'hsl') color.type += 'a';
+	    return this._convertColorToString(color, amount);
+	  },
+
+	  // Desaturates rgb and sets opacity to 0.15
+	  lighten: function lighten(color, amount) {
+	    color = this._decomposeColor(color);
+
+	    if (color.type.indexOf('hsl') > -1) {
+	      color.values[2] += amount;
+	      return this._decomposeColor(this._convertColorToString(color));
+	    } else if (color.type.indexOf('rgb') > -1) {
+	      for (var i = 0; i < 3; i++) {
+	        color.values[i] *= 1 + amount;
+	        if (color.values[i] > 255) color.values[i] = 255;
+	      }
+	    }
+
+	    if (color.type.indexOf('a') <= -1) color.type += 'a';
+
+	    return this._convertColorToString(color, '0.15');
+	  },
+
+	  darken: function darken(color, amount) {
+	    color = this._decomposeColor(color);
+
+	    if (color.type.indexOf('hsl') > -1) {
+	      color.values[2] += amount;
+	      return this._decomposeColor(this._convertColorToString(color));
+	    } else if (color.type.indexOf('rgb') > -1) {
+	      for (var i = 0; i < 3; i++) {
+	        color.values[i] *= 1 - amount;
+	        if (color.values[i] < 0) color.values[i] = 0;
+	      }
+	    }
+
+	    return this._convertColorToString(color);
+	  },
+
+	  // Calculates the contrast ratio between two colors.
+	  //
+	  // Formula: http://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef
+	  contrastRatio: function contrastRatio(background, foreground) {
+	    var lumA = this._luminance(background);
+	    var lumB = this._luminance(foreground);
+
+	    if (lumA >= lumB) {
+	      return ((lumA + 0.05) / (lumB + 0.05)).toFixed(2);
+	    } else {
+	      return ((lumB + 0.05) / (lumA + 0.05)).toFixed(2);
+	    }
+	  },
+
+	  /**
+	   * Determines how readable a color combination is based on its level.
+	   * Levels are defined from @LeaVerou:
+	   * https://github.com/LeaVerou/contrast-ratio/blob/gh-pages/contrast-ratio.js
+	   */
+	  contrastRatioLevel: function contrastRatioLevel(background, foreground) {
+	    var levels = {
+	      'fail': {
+	        range: [0, 3],
+	        color: 'hsl(0, 100%, 40%)'
+	      },
+	      'aa-large': {
+	        range: [3, 4.5],
+	        color: 'hsl(40, 100%, 45%)'
+	      },
+	      'aa': {
+	        range: [4.5, 7],
+	        color: 'hsl(80, 60%, 45%)'
+	      },
+	      'aaa': {
+	        range: [7, 22],
+	        color: 'hsl(95, 60%, 41%)'
+	      }
+	    };
+
+	    var ratio = this.contrastRatio(background, foreground);
+
+	    for (var level in levels) {
+	      var range = levels[level].range;
+	      if (ratio >= range[0] && ratio <= range[1]) return level;
+	    }
 	  }
 	};
 
 /***/ },
-/* 174 */
+/* 171 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	var Colors = __webpack_require__(172);
+
+	var Typography = function Typography() {
+	  _classCallCheck(this, Typography);
+
+	  // text colors
+	  this.textFullBlack = Colors.fullBlack;
+	  this.textDarkBlack = Colors.darkBlack;
+	  this.textLightBlack = Colors.lightBlack;
+	  this.textMinBlack = Colors.minBlack;
+	  this.textFullWhite = Colors.fullWhite;
+	  this.textDarkWhite = Colors.darkWhite;
+	  this.textLightWhite = Colors.lightWhite;
+
+	  // font weight
+	  this.fontWeightLight = 300;
+	  this.fontWeightNormal = 400;
+	  this.fontWeightMedium = 500;
+
+	  this.fontStyleButtonFontSize = 14;
+	};
+
+	module.exports = new Typography();
+
+/***/ },
+/* 172 */
 /***/ function(module, exports) {
 
 	// To include this file in your project:
@@ -20903,577 +21211,7 @@
 	};
 
 /***/ },
-/* 175 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	module.exports = {
-
-	  /**
-	   * The relative brightness of any point in a colorspace, normalized to 0 for
-	   * darkest black and 1 for lightest white. RGB colors only. Does not take
-	   * into account alpha values.
-	   *
-	   * TODO:
-	   * - Take into account alpha values.
-	   * - Identify why there are minor discrepancies for some use cases
-	   *   (i.e. #F0F & #FFF). Note that these cases rarely occur.
-	   *
-	   * Formula: http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
-	   */
-	  _luminance: function _luminance(color) {
-	    color = this._decomposeColor(color);
-
-	    if (color.type.indexOf('rgb') > -1) {
-	      var rgb = color.values.map(function (val) {
-	        val /= 255; // normalized
-	        return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
-	      });
-
-	      return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
-	    } else {
-	      var message = 'Calculating the relative luminance is not available for ' + 'HSL and HSLA.';
-	      console.error(message);
-	      return -1;
-	    }
-	  },
-
-	  /**
-	   * @params:
-	   * additionalValue = An extra value that has been calculated but not included
-	   *                   with the original color object, such as an alpha value.
-	   */
-	  _convertColorToString: function _convertColorToString(color, additonalValue) {
-	    var str = color.type + '(' + parseInt(color.values[0]) + ',' + parseInt(color.values[1]) + ',' + parseInt(color.values[2]);
-
-	    if (additonalValue !== undefined) {
-	      str += ',' + additonalValue + ')';
-	    } else if (color.values.length === 4) {
-	      str += ',' + color.values[3] + ')';
-	    } else {
-	      str += ')';
-	    }
-
-	    return str;
-	  },
-
-	  // Converts a color from hex format to rgb format.
-	  _convertHexToRGB: function _convertHexToRGB(color) {
-	    if (color.length === 4) {
-	      var extendedColor = '#';
-	      for (var i = 1; i < color.length; i++) {
-	        extendedColor += color.charAt(i) + color.charAt(i);
-	      }
-	      color = extendedColor;
-	    }
-
-	    var values = {
-	      r: parseInt(color.substr(1, 2), 16),
-	      g: parseInt(color.substr(3, 2), 16),
-	      b: parseInt(color.substr(5, 2), 16)
-	    };
-
-	    return 'rgb(' + values.r + ',' + values.g + ',' + values.b + ')';
-	  },
-
-	  // Returns the type and values of a color of any given type.
-	  _decomposeColor: function _decomposeColor(color) {
-	    if (color.charAt(0) === '#') {
-	      return this._decomposeColor(this._convertHexToRGB(color));
-	    }
-
-	    var marker = color.indexOf('(');
-	    var type = color.substring(0, marker);
-	    var values = color.substring(marker + 1, color.length - 1).split(',');
-
-	    return { type: type, values: values };
-	  },
-
-	  // Set the absolute transparency of a color.
-	  // Any existing alpha values are overwritten.
-	  fade: function fade(color, amount) {
-	    color = this._decomposeColor(color);
-	    if (color.type === 'rgb' || color.type === 'hsl') color.type += 'a';
-	    return this._convertColorToString(color, amount);
-	  },
-
-	  // Desaturates rgb and sets opacity to 0.15
-	  lighten: function lighten(color, amount) {
-	    color = this._decomposeColor(color);
-
-	    if (color.type.indexOf('hsl') > -1) {
-	      color.values[2] += amount;
-	      return this._decomposeColor(this._convertColorToString(color));
-	    } else if (color.type.indexOf('rgb') > -1) {
-	      for (var i = 0; i < 3; i++) {
-	        color.values[i] *= 1 + amount;
-	        if (color.values[i] > 255) color.values[i] = 255;
-	      }
-	    }
-
-	    if (color.type.indexOf('a') <= -1) color.type += 'a';
-
-	    return this._convertColorToString(color, '0.15');
-	  },
-
-	  darken: function darken(color, amount) {
-	    color = this._decomposeColor(color);
-
-	    if (color.type.indexOf('hsl') > -1) {
-	      color.values[2] += amount;
-	      return this._decomposeColor(this._convertColorToString(color));
-	    } else if (color.type.indexOf('rgb') > -1) {
-	      for (var i = 0; i < 3; i++) {
-	        color.values[i] *= 1 - amount;
-	        if (color.values[i] < 0) color.values[i] = 0;
-	      }
-	    }
-
-	    return this._convertColorToString(color);
-	  },
-
-	  // Calculates the contrast ratio between two colors.
-	  //
-	  // Formula: http://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef
-	  contrastRatio: function contrastRatio(background, foreground) {
-	    var lumA = this._luminance(background);
-	    var lumB = this._luminance(foreground);
-
-	    if (lumA >= lumB) {
-	      return ((lumA + 0.05) / (lumB + 0.05)).toFixed(2);
-	    } else {
-	      return ((lumB + 0.05) / (lumA + 0.05)).toFixed(2);
-	    }
-	  },
-
-	  /**
-	   * Determines how readable a color combination is based on its level.
-	   * Levels are defined from @LeaVerou:
-	   * https://github.com/LeaVerou/contrast-ratio/blob/gh-pages/contrast-ratio.js
-	   */
-	  contrastRatioLevel: function contrastRatioLevel(background, foreground) {
-	    var levels = {
-	      'fail': {
-	        range: [0, 3],
-	        color: 'hsl(0, 100%, 40%)'
-	      },
-	      'aa-large': {
-	        range: [3, 4.5],
-	        color: 'hsl(40, 100%, 45%)'
-	      },
-	      'aa': {
-	        range: [4.5, 7],
-	        color: 'hsl(80, 60%, 45%)'
-	      },
-	      'aaa': {
-	        range: [7, 22],
-	        color: 'hsl(95, 60%, 41%)'
-	      }
-	    };
-
-	    var ratio = this.contrastRatio(background, foreground);
-
-	    for (var level in levels) {
-	      var range = levels[level].range;
-	      if (ratio >= range[0] && ratio <= range[1]) return level;
-	    }
-	  }
-	};
-
-/***/ },
-/* 176 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	module.exports = {
-	  iconSize: 24,
-
-	  desktopGutter: 24,
-	  desktopGutterMore: 32,
-	  desktopGutterLess: 16,
-	  desktopGutterMini: 8,
-	  desktopKeylineIncrement: 64,
-	  desktopDropDownMenuItemHeight: 32,
-	  desktopDropDownMenuFontSize: 15,
-	  desktopLeftNavMenuItemHeight: 48,
-	  desktopSubheaderHeight: 48,
-	  desktopToolbarHeight: 56
-	};
-
-/***/ },
-/* 177 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var Colors = __webpack_require__(174);
-	var ColorManipulator = __webpack_require__(175);
-	var Extend = __webpack_require__(178);
-	var update = __webpack_require__(165);
-
-	module.exports = {
-
-	  //get the MUI theme corresponding to a raw theme
-	  getMuiTheme: function getMuiTheme(rawTheme) {
-	    var returnObj = {
-	      appBar: {
-	        color: rawTheme.palette.primary1Color,
-	        textColor: rawTheme.palette.alternateTextColor,
-	        height: rawTheme.spacing.desktopKeylineIncrement
-	      },
-	      avatar: {
-	        borderColor: 'rgba(0, 0, 0, 0.08)'
-	      },
-	      button: {
-	        height: 36,
-	        minWidth: 88,
-	        iconButtonSize: rawTheme.spacing.iconSize * 2
-	      },
-	      cardText: {
-	        textColor: rawTheme.palette.textColor
-	      },
-	      checkbox: {
-	        boxColor: rawTheme.palette.textColor,
-	        checkedColor: rawTheme.palette.primary1Color,
-	        requiredColor: rawTheme.palette.primary1Color,
-	        disabledColor: rawTheme.palette.disabledColor,
-	        labelColor: rawTheme.palette.textColor,
-	        labelDisabledColor: rawTheme.palette.disabledColor
-	      },
-	      datePicker: {
-	        color: rawTheme.palette.primary1Color,
-	        textColor: rawTheme.palette.alternateTextColor,
-	        calendarTextColor: rawTheme.palette.textColor,
-	        selectColor: rawTheme.palette.primary2Color,
-	        selectTextColor: rawTheme.palette.alternateTextColor
-	      },
-	      dropDownMenu: {
-	        accentColor: rawTheme.palette.borderColor
-	      },
-	      flatButton: {
-	        color: rawTheme.palette.alternateTextColor,
-	        textColor: rawTheme.palette.textColor,
-	        primaryTextColor: rawTheme.palette.accent1Color,
-	        secondaryTextColor: rawTheme.palette.primary1Color
-	      },
-	      floatingActionButton: {
-	        buttonSize: 56,
-	        miniSize: 40,
-	        color: rawTheme.palette.accent1Color,
-	        iconColor: rawTheme.palette.alternateTextColor,
-	        secondaryColor: rawTheme.palette.primary1Color,
-	        secondaryIconColor: rawTheme.palette.alternateTextColor,
-	        disabledTextColor: rawTheme.palette.disabledColor
-	      },
-	      gridTile: {
-	        textColor: Colors.white
-	      },
-	      inkBar: {
-	        backgroundColor: rawTheme.palette.accent1Color
-	      },
-	      leftNav: {
-	        width: rawTheme.spacing.desktopKeylineIncrement * 4,
-	        color: rawTheme.palette.canvasColor
-	      },
-	      listItem: {
-	        nestedLevelDepth: 18
-	      },
-	      menu: {
-	        backgroundColor: rawTheme.palette.canvasColor,
-	        containerBackgroundColor: rawTheme.palette.canvasColor
-	      },
-	      menuItem: {
-	        dataHeight: 32,
-	        height: 48,
-	        hoverColor: 'rgba(0, 0, 0, .035)',
-	        padding: rawTheme.spacing.desktopGutter,
-	        selectedTextColor: rawTheme.palette.accent1Color
-	      },
-	      menuSubheader: {
-	        padding: rawTheme.spacing.desktopGutter,
-	        borderColor: rawTheme.palette.borderColor,
-	        textColor: rawTheme.palette.primary1Color
-	      },
-	      paper: {
-	        backgroundColor: rawTheme.palette.canvasColor
-	      },
-	      radioButton: {
-	        borderColor: rawTheme.palette.textColor,
-	        backgroundColor: rawTheme.palette.alternateTextColor,
-	        checkedColor: rawTheme.palette.primary1Color,
-	        requiredColor: rawTheme.palette.primary1Color,
-	        disabledColor: rawTheme.palette.disabledColor,
-	        size: 24,
-	        labelColor: rawTheme.palette.textColor,
-	        labelDisabledColor: rawTheme.palette.disabledColor
-	      },
-	      raisedButton: {
-	        color: rawTheme.palette.alternateTextColor,
-	        textColor: rawTheme.palette.textColor,
-	        primaryColor: rawTheme.palette.accent1Color,
-	        primaryTextColor: rawTheme.palette.alternateTextColor,
-	        secondaryColor: rawTheme.palette.primary1Color,
-	        secondaryTextColor: rawTheme.palette.alternateTextColor
-	      },
-	      refreshIndicator: {
-	        strokeColor: rawTheme.palette.borderColor,
-	        loadingStrokeColor: rawTheme.palette.primary1Color
-	      },
-	      slider: {
-	        trackSize: 2,
-	        trackColor: rawTheme.palette.primary3Color,
-	        trackColorSelected: rawTheme.palette.accent3Color,
-	        handleSize: 12,
-	        handleSizeDisabled: 8,
-	        handleSizeActive: 18,
-	        handleColorZero: rawTheme.palette.borderColor,
-	        handleFillColor: rawTheme.palette.alternateTextColor,
-	        selectionColor: rawTheme.palette.primary1Color,
-	        rippleColor: rawTheme.palette.primary1Color
-	      },
-	      snackbar: {
-	        textColor: rawTheme.palette.alternateTextColor,
-	        backgroundColor: rawTheme.palette.textColor,
-	        actionColor: rawTheme.palette.accent1Color
-	      },
-	      table: {
-	        backgroundColor: rawTheme.palette.canvasColor
-	      },
-	      tableHeader: {
-	        borderColor: rawTheme.palette.borderColor
-	      },
-	      tableHeaderColumn: {
-	        textColor: rawTheme.palette.primary3Color,
-	        height: 56,
-	        spacing: 24
-	      },
-	      tableFooter: {
-	        borderColor: rawTheme.palette.borderColor,
-	        textColor: rawTheme.palette.primary3Color
-	      },
-	      tableRow: {
-	        hoverColor: rawTheme.palette.accent2Color,
-	        stripeColor: ColorManipulator.lighten(rawTheme.palette.primary1Color, 0.55),
-	        selectedColor: rawTheme.palette.borderColor,
-	        textColor: rawTheme.palette.textColor,
-	        borderColor: rawTheme.palette.borderColor
-	      },
-	      tableRowColumn: {
-	        height: 48,
-	        spacing: 24
-	      },
-	      timePicker: {
-	        color: rawTheme.palette.alternateTextColor,
-	        textColor: rawTheme.palette.accent3Color,
-	        accentColor: rawTheme.palette.primary1Color,
-	        clockColor: rawTheme.palette.primary3Color,
-	        selectColor: rawTheme.palette.primary2Color,
-	        selectTextColor: rawTheme.palette.alternateTextColor
-	      },
-	      toggle: {
-	        thumbOnColor: rawTheme.palette.primary1Color,
-	        thumbOffColor: rawTheme.palette.accent2Color,
-	        thumbDisabledColor: rawTheme.palette.borderColor,
-	        thumbRequiredColor: rawTheme.palette.primary1Color,
-	        trackOnColor: ColorManipulator.fade(rawTheme.palette.primary1Color, 0.5),
-	        trackOffColor: rawTheme.palette.primary3Color,
-	        trackDisabledColor: rawTheme.palette.primary3Color,
-	        labelColor: rawTheme.palette.textColor,
-	        labelDisabledColor: rawTheme.palette.disabledColor
-	      },
-	      toolbar: {
-	        backgroundColor: ColorManipulator.darken(rawTheme.palette.accent2Color, 0.05),
-	        height: 56,
-	        titleFontSize: 20,
-	        iconColor: 'rgba(0, 0, 0, .40)',
-	        separatorColor: 'rgba(0, 0, 0, .175)',
-	        menuHoverColor: 'rgba(0, 0, 0, .10)'
-	      },
-	      tabs: {
-	        backgroundColor: rawTheme.palette.primary1Color,
-	        textColor: ColorManipulator.fade(rawTheme.palette.alternateTextColor, 0.6),
-	        selectedTextColor: rawTheme.palette.alternateTextColor
-	      },
-	      textField: {
-	        textColor: rawTheme.palette.textColor,
-	        hintColor: rawTheme.palette.disabledColor,
-	        floatingLabelColor: rawTheme.palette.textColor,
-	        disabledTextColor: rawTheme.palette.disabledColor,
-	        errorColor: Colors.red500,
-	        focusColor: rawTheme.palette.primary1Color,
-	        backgroundColor: 'transparent',
-	        borderColor: rawTheme.palette.borderColor
-	      },
-	      isRtl: false
-	    };
-
-	    //add properties to objects inside 'returnObj' that depend on existing properties
-	    returnObj.flatButton.disabledTextColor = ColorManipulator.fade(returnObj.flatButton.textColor, 0.3);
-	    returnObj.raisedButton.disabledColor = ColorManipulator.darken(returnObj.raisedButton.color, 0.1);
-	    returnObj.raisedButton.disabledTextColor = ColorManipulator.fade(returnObj.raisedButton.textColor, 0.3);
-	    returnObj.toggle.trackRequiredColor = ColorManipulator.fade(returnObj.toggle.thumbRequiredColor, 0.5);
-
-	    //append the raw theme object to 'returnObj'
-	    returnObj.rawTheme = rawTheme;
-
-	    //set 'static' key as true (by default) on return object. This is to support the ContextPure mixin.
-	    returnObj['static'] = true;
-
-	    return returnObj;
-	  },
-
-	  //functions to modify properties of raw theme, namely spacing, palette
-	  //and font family. These functions use the React update immutability helper
-	  //to create a new object for the raw theme, and return a new MUI theme object
-
-	  //function to modify the spacing of the raw theme. This function recomputes
-	  //the MUI theme and returns it based on the new theme.
-	  modifyRawThemeSpacing: function modifyRawThemeSpacing(muiTheme, newSpacing) {
-	    var newRawTheme = update(muiTheme.rawTheme, { spacing: { $set: newSpacing } });
-	    return this.getMuiTheme(newRawTheme);
-	  },
-
-	  //function to modify the palette of the raw theme. This function recomputes
-	  //the MUI theme and returns it based on the new raw theme.
-	  //keys inside 'newPalette' override values for existing keys in palette
-	  modifyRawThemePalette: function modifyRawThemePalette(muiTheme, newPaletteKeys) {
-	    var newPalette = Extend(muiTheme.rawTheme.palette, newPaletteKeys);
-	    var newRawTheme = update(muiTheme.rawTheme, { palette: { $set: newPalette } });
-	    return this.getMuiTheme(newRawTheme);
-	  },
-
-	  //function to modify the font family of the raw theme. This function recomputes
-	  //the MUI theme and returns it based on the new raw theme.
-	  modifyRawThemeFontFamily: function modifyRawThemeFontFamily(muiTheme, newFontFamily) {
-	    var newRawTheme = update(muiTheme.rawTheme, { fontFamily: { $set: newFontFamily } });
-	    return this.getMuiTheme(newRawTheme);
-	  }
-
-	};
-
-/***/ },
-/* 178 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	function isObject(obj) {
-	  return typeof obj === 'object' && obj !== null;
-	}
-
-	/**
-	*  A recursive merge between two objects.
-	*
-	*  @param base     - the object whose properties are to be overwritten. It
-	*                    should be either the root level or some nested level.
-	*  @param override - an object containing properties to be overwritten. It
-	*                    should have the same structure as the object object.
-	*/
-	var extend = function extend(base, override) {
-
-	  var mergedObject = {};
-
-	  //Loop through each key in the base object
-	  Object.keys(base).forEach(function (key) {
-
-	    var baseProp = base[key];
-	    var overrideProp = undefined;
-
-	    if (isObject(override)) overrideProp = override[key];
-
-	    //Recursive call extend if the prop is another object, else just copy it over
-	    mergedObject[key] = isObject(baseProp) && !Array.isArray(baseProp) ? extend(baseProp, overrideProp) : baseProp;
-	  });
-
-	  //Loop through each override key and override the props in the
-	  //base object
-	  if (isObject(override)) {
-
-	    Object.keys(override).forEach(function (overrideKey) {
-
-	      var overrideProp = override[overrideKey];
-
-	      //Only copy over props that are not objects
-	      if (!isObject(overrideProp) || Array.isArray(overrideProp)) {
-	        mergedObject[overrideKey] = overrideProp;
-	      }
-	    });
-	  }
-
-	  return mergedObject;
-	};
-
-	module.exports = extend;
-
-/***/ },
-/* 179 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = (function(){
-	  'use strict';
-	  var React = __webpack_require__(1);
-	  var RaisedButton = __webpack_require__(180);
-	  var injectTapEventPlugin = __webpack_require__(197);
-	  var EmailField = __webpack_require__(201);
-	  var Poll = __webpack_require__(207);
-
-	  // Needed for onTouchTap
-	  // Can go away when react 1.0 release, cf https://github.com/zilverline/react-tap-event-plugin
-	  injectTapEventPlugin();
-
-	  var PollForm = React.createClass({
-
-	    getInitialState() {
-	      return {
-	        validEmail: false,
-	        options: []
-	      };
-	    },
-
-	    render() {
-	      var paperProps = {
-	        style: {
-	          backgroundColor: 'white',
-	          padding: '16px',
-	          paddingTop: '1px'
-	        }
-	      };
-	      return React.createElement('div', paperProps,
-	        React.createElement(Poll, {
-	          options: this.props.options
-	        }),
-	        React.createElement(EmailField, {
-	          ref: 'email',
-	          name: 'EMAIL',
-	          hintText: 'Email',
-	          required: true,
-	          onValidation: this.onEmailValidation,
-	          style: { margin: '20px 0' }
-	        }),
-	        React.createElement(RaisedButton, {
-	          label: 'Submit',
-	          primary: true,
-	          style: { display: 'block' },
-	          onTouchTap: this.state.validEmail ? this.props.onValidSubmit : undefined
-	        })
-	      );
-	    },
-
-	    onEmailValidation() {
-	      this.setState({ validEmail: this.refs.email.state.valid });
-	    }
-
-	  });
-
-	  return PollForm;
-
-	})();
-
-
-/***/ },
-/* 180 */
+/* 173 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21483,315 +21221,16 @@
 	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
 	var React = __webpack_require__(1);
-	var ReactDOM = __webpack_require__(158);
-	var StylePropable = __webpack_require__(163);
-	var Transitions = __webpack_require__(172);
-	var ColorManipulator = __webpack_require__(175);
-	var Typography = __webpack_require__(181);
-	var EnhancedButton = __webpack_require__(182);
-	var Paper = __webpack_require__(159);
-	var DefaultRawTheme = __webpack_require__(173);
-	var ThemeManager = __webpack_require__(177);
-
-	function validateLabel(props, propName, componentName) {
-	  if (!props.children && !props.label) {
-	    return new Error('Required prop label or children was not ' + 'specified in ' + componentName + '.');
-	  }
-	}
-
-	var RaisedButton = React.createClass({
-	  displayName: 'RaisedButton',
-
-	  mixins: [StylePropable],
-
-	  contextTypes: {
-	    muiTheme: React.PropTypes.object
-	  },
-
-	  //for passing default theme context to children
-	  childContextTypes: {
-	    muiTheme: React.PropTypes.object
-	  },
-
-	  getChildContext: function getChildContext() {
-	    return {
-	      muiTheme: this.state.muiTheme
-	    };
-	  },
-
-	  propTypes: {
-	    className: React.PropTypes.string,
-	    disabled: React.PropTypes.bool,
-	    label: validateLabel,
-	    onMouseDown: React.PropTypes.func,
-	    onMouseUp: React.PropTypes.func,
-	    onMouseLeave: React.PropTypes.func,
-	    onTouchEnd: React.PropTypes.func,
-	    onTouchStart: React.PropTypes.func,
-	    primary: React.PropTypes.bool,
-	    secondary: React.PropTypes.bool,
-	    labelStyle: React.PropTypes.object,
-	    backgroundColor: React.PropTypes.string,
-	    labelColor: React.PropTypes.string,
-	    disabledBackgroundColor: React.PropTypes.string,
-	    disabledLabelColor: React.PropTypes.string,
-	    fullWidth: React.PropTypes.bool
-	  },
-
-	  getInitialState: function getInitialState() {
-	    var zDepth = this.props.disabled ? 0 : 1;
-	    return {
-	      hovered: false,
-	      touched: false,
-	      initialZDepth: zDepth,
-	      zDepth: zDepth,
-	      muiTheme: this.context.muiTheme ? this.context.muiTheme : ThemeManager.getMuiTheme(DefaultRawTheme)
-	    };
-	  },
-
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps, nextContext) {
-	    var zDepth = nextProps.disabled ? 0 : 1;
-	    var newMuiTheme = nextContext.muiTheme ? nextContext.muiTheme : this.state.muiTheme;
-	    this.setState({
-	      zDepth: zDepth,
-	      initialZDepth: zDepth,
-	      muiTheme: newMuiTheme
-	    });
-	  },
-
-	  _getBackgroundColor: function _getBackgroundColor() {
-	    var disabledColor = this.props.disabledBackgroundColor ? this.props.disabledBackgroundColor : this.getTheme().disabledColor;
-
-	    return this.props.disabled ? disabledColor : this.props.backgroundColor ? this.props.backgroundColor : this.props.primary ? this.getTheme().primaryColor : this.props.secondary ? this.getTheme().secondaryColor : this.getTheme().color;
-	  },
-
-	  _getLabelColor: function _getLabelColor() {
-	    var disabledColor = this.props.disabledLabelColor ? this.props.disabledLabelColor : this.getTheme().disabledTextColor;
-
-	    return this.props.disabled ? disabledColor : this.props.labelColor ? this.props.labelColor : this.props.primary ? this.getTheme().primaryTextColor : this.props.secondary ? this.getTheme().secondaryTextColor : this.getTheme().textColor;
-	  },
-
-	  getThemeButton: function getThemeButton() {
-	    return this.state.muiTheme.button;
-	  },
-
-	  getTheme: function getTheme() {
-	    return this.state.muiTheme.raisedButton;
-	  },
-
-	  getStyles: function getStyles() {
-
-	    var amount = this.props.primary || this.props.secondary ? 0.4 : 0.08;
-	    var styles = {
-	      root: {
-	        backgroundColor: 'none',
-	        display: 'inline-block',
-	        minWidth: this.props.fullWidth ? '100%' : this.getThemeButton().minWidth,
-	        height: this.getThemeButton().height,
-	        transition: Transitions.easeOut()
-	      },
-	      container: {
-	        position: 'relative',
-	        height: '100%',
-	        width: '100%',
-	        padding: 0,
-	        overflow: 'hidden',
-	        borderRadius: 2,
-	        transition: Transitions.easeOut(),
-	        backgroundColor: this._getBackgroundColor(),
-
-	        //This is need so that ripples do not bleed
-	        //past border radius.
-	        //See: http://stackoverflow.com/questions/17298739/css-overflow-hidden-not-working-in-chrome-when-parent-has-border-radius-and-chil
-	        transform: 'translate3d(0, 0, 0)'
-	      },
-	      label: {
-	        position: 'relative',
-	        opacity: 1,
-	        fontSize: '14px',
-	        letterSpacing: 0,
-	        textTransform: this.getTheme().textTransform ? this.getTheme().textTransform : this.getThemeButton().textTransform ? this.getThemeButton().textTransform : 'uppercase',
-	        fontWeight: Typography.fontWeightMedium,
-	        margin: 0,
-	        padding: '0px ' + this.state.muiTheme.rawTheme.spacing.desktopGutterLess + 'px',
-	        userSelect: 'none',
-	        lineHeight: this.props.style && this.props.style.height ? this.props.style.height : this.getThemeButton().height + 'px',
-	        color: this._getLabelColor()
-	      },
-	      overlay: {
-	        transition: Transitions.easeOut(),
-	        top: 0
-	      },
-	      overlayWhenHovered: {
-	        backgroundColor: ColorManipulator.fade(this._getLabelColor(), amount)
-	      }
-	    };
-	    return styles;
-	  },
-
-	  render: function render() {
-	    var _props = this.props;
-	    var disabled = _props.disabled;
-	    var label = _props.label;
-	    var primary = _props.primary;
-	    var secondary = _props.secondary;
-
-	    var other = _objectWithoutProperties(_props, ['disabled', 'label', 'primary', 'secondary']);
-
-	    var styles = this.getStyles();
-
-	    var labelElement = undefined;
-	    if (label) {
-	      labelElement = React.createElement(
-	        'span',
-	        { style: this.prepareStyles(styles.label, this.props.labelStyle) },
-	        label
-	      );
-	    }
-
-	    var rippleColor = styles.label.color;
-	    var rippleOpacity = !(primary || secondary) ? 0.1 : 0.16;
-
-	    var buttonEventHandlers = disabled ? null : {
-	      onMouseDown: this._handleMouseDown,
-	      onMouseUp: this._handleMouseUp,
-	      onMouseLeave: this._handleMouseLeave,
-	      onMouseEnter: this._handleMouseEnter,
-	      onTouchStart: this._handleTouchStart,
-	      onTouchEnd: this._handleTouchEnd,
-	      onKeyboardFocus: this._handleKeyboardFocus
-	    };
-
-	    return React.createElement(
-	      Paper,
-	      {
-	        style: this.mergeStyles(styles.root, this.props.style),
-	        zDepth: this.state.zDepth },
-	      React.createElement(
-	        EnhancedButton,
-	        _extends({}, other, buttonEventHandlers, {
-	          ref: 'container',
-	          disabled: disabled,
-	          style: this.mergeStyles(styles.container),
-	          focusRippleColor: rippleColor,
-	          touchRippleColor: rippleColor,
-	          focusRippleOpacity: rippleOpacity,
-	          touchRippleOpacity: rippleOpacity }),
-	        React.createElement(
-	          'div',
-	          { ref: 'overlay', style: this.prepareStyles(styles.overlay, this.state.hovered && !this.props.disabled && styles.overlayWhenHovered) },
-	          labelElement,
-	          this.props.children
-	        )
-	      )
-	    );
-	  },
-
-	  _handleMouseDown: function _handleMouseDown(e) {
-	    //only listen to left clicks
-	    if (e.button === 0) {
-	      this.setState({ zDepth: this.state.initialZDepth + 1 });
-	    }
-	    if (this.props.onMouseDown) this.props.onMouseDown(e);
-	  },
-
-	  _handleMouseUp: function _handleMouseUp(e) {
-	    this.setState({ zDepth: this.state.initialZDepth });
-	    if (this.props.onMouseUp) this.props.onMouseUp(e);
-	  },
-
-	  _handleMouseLeave: function _handleMouseLeave(e) {
-	    if (!this.refs.container.isKeyboardFocused()) this.setState({ zDepth: this.state.initialZDepth, hovered: false });
-	    if (this.props.onMouseLeave) this.props.onMouseLeave(e);
-	  },
-
-	  _handleMouseEnter: function _handleMouseEnter(e) {
-	    if (!this.refs.container.isKeyboardFocused() && !this.state.touch) {
-	      this.setState({ hovered: true });
-	    }
-	    if (this.props.onMouseEnter) this.props.onMouseEnter(e);
-	  },
-
-	  _handleTouchStart: function _handleTouchStart(e) {
-	    this.setState({
-	      touch: true,
-	      zDepth: this.state.initialZDepth + 1
-	    });
-	    if (this.props.onTouchStart) this.props.onTouchStart(e);
-	  },
-
-	  _handleTouchEnd: function _handleTouchEnd(e) {
-	    this.setState({ zDepth: this.state.initialZDepth });
-	    if (this.props.onTouchEnd) this.props.onTouchEnd(e);
-	  },
-
-	  _handleKeyboardFocus: function _handleKeyboardFocus(e, keyboardFocused) {
-	    if (keyboardFocused && !this.props.disabled) {
-	      this.setState({ zDepth: this.state.initialZDepth + 1 });
-	      var amount = this.props.primary || this.props.secondary ? 0.4 : 0.08;
-	      ReactDOM.findDOMNode(this.refs.overlay).style.backgroundColor = ColorManipulator.fade(this.prepareStyles(this.getStyles().label, this.props.labelStyle).color, amount);
-	    } else if (!this.state.hovered) {
-	      this.setState({ zDepth: this.state.initialZDepth });
-	      ReactDOM.findDOMNode(this.refs.overlay).style.backgroundColor = 'transparent';
-	    }
-	  }
-	});
-
-	module.exports = RaisedButton;
-
-/***/ },
-/* 181 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-	var Colors = __webpack_require__(174);
-
-	var Typography = function Typography() {
-	  _classCallCheck(this, Typography);
-
-	  // text colors
-	  this.textFullBlack = Colors.fullBlack;
-	  this.textDarkBlack = Colors.darkBlack;
-	  this.textLightBlack = Colors.lightBlack;
-	  this.textMinBlack = Colors.minBlack;
-	  this.textFullWhite = Colors.fullWhite;
-	  this.textDarkWhite = Colors.darkWhite;
-	  this.textLightWhite = Colors.lightWhite;
-
-	  // font weight
-	  this.fontWeightLight = 300;
-	  this.fontWeightNormal = 400;
-	  this.fontWeightMedium = 500;
-
-	  this.fontStyleButtonFontSize = 14;
-	};
-
-	module.exports = new Typography();
-
-/***/ },
-/* 182 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
-
-	var React = __webpack_require__(1);
-	var PureRenderMixin = __webpack_require__(160);
-	var StylePropable = __webpack_require__(163);
-	var Colors = __webpack_require__(174);
-	var Children = __webpack_require__(183);
-	var Events = __webpack_require__(186);
-	var KeyCode = __webpack_require__(187);
-	var FocusRipple = __webpack_require__(188);
-	var TouchRipple = __webpack_require__(194);
-	var DefaultRawTheme = __webpack_require__(173);
-	var ThemeManager = __webpack_require__(177);
+	var PureRenderMixin = __webpack_require__(174);
+	var StylePropable = __webpack_require__(161);
+	var Colors = __webpack_require__(172);
+	var Children = __webpack_require__(177);
+	var Events = __webpack_require__(180);
+	var KeyCode = __webpack_require__(181);
+	var FocusRipple = __webpack_require__(182);
+	var TouchRipple = __webpack_require__(192);
+	var DefaultRawTheme = __webpack_require__(188);
+	var ThemeManager = __webpack_require__(190);
 
 	var styleInjected = false;
 	var listening = false;
@@ -22077,13 +21516,99 @@
 	module.exports = EnhancedButton;
 
 /***/ },
-/* 183 */
+/* 174 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(175);
+
+/***/ },
+/* 175 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactComponentWithPureRenderMixin
+	 */
+
+	'use strict';
+
+	var shallowCompare = __webpack_require__(176);
+
+	/**
+	 * If your React component's render function is "pure", e.g. it will render the
+	 * same result given the same props and state, provide this Mixin for a
+	 * considerable performance boost.
+	 *
+	 * Most React components have pure render functions.
+	 *
+	 * Example:
+	 *
+	 *   var ReactComponentWithPureRenderMixin =
+	 *     require('ReactComponentWithPureRenderMixin');
+	 *   React.createClass({
+	 *     mixins: [ReactComponentWithPureRenderMixin],
+	 *
+	 *     render: function() {
+	 *       return <div className={this.props.className}>foo</div>;
+	 *     }
+	 *   });
+	 *
+	 * Note: This only checks shallow equality for props and state. If these contain
+	 * complex data structures this mixin may have false-negatives for deeper
+	 * differences. Only mixin to components which have simple props and state, or
+	 * use `forceUpdate()` when you know deep data structures have changed.
+	 */
+	var ReactComponentWithPureRenderMixin = {
+	  shouldComponentUpdate: function (nextProps, nextState) {
+	    return shallowCompare(this, nextProps, nextState);
+	  }
+	};
+
+	module.exports = ReactComponentWithPureRenderMixin;
+
+/***/ },
+/* 176 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	* @providesModule shallowCompare
+	*/
+
+	'use strict';
+
+	var shallowEqual = __webpack_require__(117);
+
+	/**
+	 * Does a shallow comparison for props and state.
+	 * See ReactComponentWithPureRenderMixin
+	 */
+	function shallowCompare(instance, nextProps, nextState) {
+	  return !shallowEqual(instance.props, nextProps) || !shallowEqual(instance.state, nextState);
+	}
+
+	module.exports = shallowCompare;
+
+/***/ },
+/* 177 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var createFragment = __webpack_require__(184);
+	var createFragment = __webpack_require__(178);
 
 	module.exports = {
 
@@ -22123,13 +21648,13 @@
 	};
 
 /***/ },
-/* 184 */
+/* 178 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(185).create;
+	module.exports = __webpack_require__(179).create;
 
 /***/ },
-/* 185 */
+/* 179 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -22199,7 +21724,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 186 */
+/* 180 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -22244,7 +21769,7 @@
 	};
 
 /***/ },
-/* 187 */
+/* 181 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -22261,19 +21786,19 @@
 	};
 
 /***/ },
-/* 188 */
+/* 182 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var PureRenderMixin = __webpack_require__(160);
-	var StylePropable = __webpack_require__(163);
-	var AutoPrefix = __webpack_require__(168);
-	var Colors = __webpack_require__(174);
-	var Transitions = __webpack_require__(172);
-	var ScaleInTransitionGroup = __webpack_require__(189);
+	var PureRenderMixin = __webpack_require__(174);
+	var StylePropable = __webpack_require__(161);
+	var AutoPrefix = __webpack_require__(166);
+	var Colors = __webpack_require__(172);
+	var Transitions = __webpack_require__(169);
+	var ScaleInTransitionGroup = __webpack_require__(183);
 
 	var pulsateDuration = 750;
 
@@ -22391,7 +21916,7 @@
 	module.exports = FocusRipple;
 
 /***/ },
-/* 189 */
+/* 183 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22401,12 +21926,12 @@
 	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
 	var React = __webpack_require__(1);
-	var PureRenderMixin = __webpack_require__(160);
-	var ReactTransitionGroup = __webpack_require__(190);
-	var StylePropable = __webpack_require__(163);
-	var ScaleInChild = __webpack_require__(193);
-	var DefaultRawTheme = __webpack_require__(173);
-	var ThemeManager = __webpack_require__(177);
+	var PureRenderMixin = __webpack_require__(174);
+	var ReactTransitionGroup = __webpack_require__(184);
+	var StylePropable = __webpack_require__(161);
+	var ScaleInChild = __webpack_require__(187);
+	var DefaultRawTheme = __webpack_require__(188);
+	var ThemeManager = __webpack_require__(190);
 
 	var ScaleIn = React.createClass({
 	  displayName: 'ScaleIn',
@@ -22498,13 +22023,13 @@
 	module.exports = ScaleIn;
 
 /***/ },
-/* 190 */
+/* 184 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(191);
+	module.exports = __webpack_require__(185);
 
 /***/ },
-/* 191 */
+/* 185 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -22521,7 +22046,7 @@
 	'use strict';
 
 	var React = __webpack_require__(2);
-	var ReactTransitionChildMapping = __webpack_require__(192);
+	var ReactTransitionChildMapping = __webpack_require__(186);
 
 	var assign = __webpack_require__(39);
 	var emptyFunction = __webpack_require__(15);
@@ -22714,7 +22239,7 @@
 	module.exports = ReactTransitionGroup;
 
 /***/ },
-/* 192 */
+/* 186 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -22817,7 +22342,7 @@
 	module.exports = ReactTransitionChildMapping;
 
 /***/ },
-/* 193 */
+/* 187 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22828,12 +22353,12 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var PureRenderMixin = __webpack_require__(160);
-	var StylePropable = __webpack_require__(163);
-	var AutoPrefix = __webpack_require__(168);
-	var Transitions = __webpack_require__(172);
-	var DefaultRawTheme = __webpack_require__(173);
-	var ThemeManager = __webpack_require__(177);
+	var PureRenderMixin = __webpack_require__(174);
+	var StylePropable = __webpack_require__(161);
+	var AutoPrefix = __webpack_require__(166);
+	var Transitions = __webpack_require__(169);
+	var DefaultRawTheme = __webpack_require__(188);
+	var ThemeManager = __webpack_require__(190);
 
 	var ScaleInChild = React.createClass({
 	  displayName: 'ScaleInChild',
@@ -22960,19 +22485,379 @@
 	module.exports = ScaleInChild;
 
 /***/ },
-/* 194 */
+/* 188 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Colors = __webpack_require__(172);
+	var ColorManipulator = __webpack_require__(170);
+	var Spacing = __webpack_require__(189);
+
+	/*
+	 *  Light Theme is the default theme used in material-ui. It is guaranteed to
+	 *  have all theme variables needed for every component. Variables not defined
+	 *  in a custom theme will default to these values.
+	 */
+
+	module.exports = {
+	  spacing: Spacing,
+	  fontFamily: 'Roboto, sans-serif',
+	  palette: {
+	    primary1Color: Colors.cyan500,
+	    primary2Color: Colors.cyan700,
+	    primary3Color: Colors.lightBlack,
+	    accent1Color: Colors.pinkA200,
+	    accent2Color: Colors.grey100,
+	    accent3Color: Colors.grey500,
+	    textColor: Colors.darkBlack,
+	    alternateTextColor: Colors.white,
+	    canvasColor: Colors.white,
+	    borderColor: Colors.grey300,
+	    disabledColor: ColorManipulator.fade(Colors.darkBlack, 0.3)
+	  }
+	};
+
+/***/ },
+/* 189 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	module.exports = {
+	  iconSize: 24,
+
+	  desktopGutter: 24,
+	  desktopGutterMore: 32,
+	  desktopGutterLess: 16,
+	  desktopGutterMini: 8,
+	  desktopKeylineIncrement: 64,
+	  desktopDropDownMenuItemHeight: 32,
+	  desktopDropDownMenuFontSize: 15,
+	  desktopLeftNavMenuItemHeight: 48,
+	  desktopSubheaderHeight: 48,
+	  desktopToolbarHeight: 56
+	};
+
+/***/ },
+/* 190 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var Colors = __webpack_require__(172);
+	var ColorManipulator = __webpack_require__(170);
+	var Extend = __webpack_require__(191);
+	var update = __webpack_require__(163);
+
+	module.exports = {
+
+	  //get the MUI theme corresponding to a raw theme
+	  getMuiTheme: function getMuiTheme(rawTheme) {
+	    var returnObj = {
+	      appBar: {
+	        color: rawTheme.palette.primary1Color,
+	        textColor: rawTheme.palette.alternateTextColor,
+	        height: rawTheme.spacing.desktopKeylineIncrement
+	      },
+	      avatar: {
+	        borderColor: 'rgba(0, 0, 0, 0.08)'
+	      },
+	      button: {
+	        height: 36,
+	        minWidth: 88,
+	        iconButtonSize: rawTheme.spacing.iconSize * 2
+	      },
+	      cardText: {
+	        textColor: rawTheme.palette.textColor
+	      },
+	      checkbox: {
+	        boxColor: rawTheme.palette.textColor,
+	        checkedColor: rawTheme.palette.primary1Color,
+	        requiredColor: rawTheme.palette.primary1Color,
+	        disabledColor: rawTheme.palette.disabledColor,
+	        labelColor: rawTheme.palette.textColor,
+	        labelDisabledColor: rawTheme.palette.disabledColor
+	      },
+	      datePicker: {
+	        color: rawTheme.palette.primary1Color,
+	        textColor: rawTheme.palette.alternateTextColor,
+	        calendarTextColor: rawTheme.palette.textColor,
+	        selectColor: rawTheme.palette.primary2Color,
+	        selectTextColor: rawTheme.palette.alternateTextColor
+	      },
+	      dropDownMenu: {
+	        accentColor: rawTheme.palette.borderColor
+	      },
+	      flatButton: {
+	        color: rawTheme.palette.alternateTextColor,
+	        textColor: rawTheme.palette.textColor,
+	        primaryTextColor: rawTheme.palette.accent1Color,
+	        secondaryTextColor: rawTheme.palette.primary1Color
+	      },
+	      floatingActionButton: {
+	        buttonSize: 56,
+	        miniSize: 40,
+	        color: rawTheme.palette.accent1Color,
+	        iconColor: rawTheme.palette.alternateTextColor,
+	        secondaryColor: rawTheme.palette.primary1Color,
+	        secondaryIconColor: rawTheme.palette.alternateTextColor,
+	        disabledTextColor: rawTheme.palette.disabledColor
+	      },
+	      gridTile: {
+	        textColor: Colors.white
+	      },
+	      inkBar: {
+	        backgroundColor: rawTheme.palette.accent1Color
+	      },
+	      leftNav: {
+	        width: rawTheme.spacing.desktopKeylineIncrement * 4,
+	        color: rawTheme.palette.canvasColor
+	      },
+	      listItem: {
+	        nestedLevelDepth: 18
+	      },
+	      menu: {
+	        backgroundColor: rawTheme.palette.canvasColor,
+	        containerBackgroundColor: rawTheme.palette.canvasColor
+	      },
+	      menuItem: {
+	        dataHeight: 32,
+	        height: 48,
+	        hoverColor: 'rgba(0, 0, 0, .035)',
+	        padding: rawTheme.spacing.desktopGutter,
+	        selectedTextColor: rawTheme.palette.accent1Color
+	      },
+	      menuSubheader: {
+	        padding: rawTheme.spacing.desktopGutter,
+	        borderColor: rawTheme.palette.borderColor,
+	        textColor: rawTheme.palette.primary1Color
+	      },
+	      paper: {
+	        backgroundColor: rawTheme.palette.canvasColor
+	      },
+	      radioButton: {
+	        borderColor: rawTheme.palette.textColor,
+	        backgroundColor: rawTheme.palette.alternateTextColor,
+	        checkedColor: rawTheme.palette.primary1Color,
+	        requiredColor: rawTheme.palette.primary1Color,
+	        disabledColor: rawTheme.palette.disabledColor,
+	        size: 24,
+	        labelColor: rawTheme.palette.textColor,
+	        labelDisabledColor: rawTheme.palette.disabledColor
+	      },
+	      raisedButton: {
+	        color: rawTheme.palette.alternateTextColor,
+	        textColor: rawTheme.palette.textColor,
+	        primaryColor: rawTheme.palette.accent1Color,
+	        primaryTextColor: rawTheme.palette.alternateTextColor,
+	        secondaryColor: rawTheme.palette.primary1Color,
+	        secondaryTextColor: rawTheme.palette.alternateTextColor
+	      },
+	      refreshIndicator: {
+	        strokeColor: rawTheme.palette.borderColor,
+	        loadingStrokeColor: rawTheme.palette.primary1Color
+	      },
+	      slider: {
+	        trackSize: 2,
+	        trackColor: rawTheme.palette.primary3Color,
+	        trackColorSelected: rawTheme.palette.accent3Color,
+	        handleSize: 12,
+	        handleSizeDisabled: 8,
+	        handleSizeActive: 18,
+	        handleColorZero: rawTheme.palette.borderColor,
+	        handleFillColor: rawTheme.palette.alternateTextColor,
+	        selectionColor: rawTheme.palette.primary1Color,
+	        rippleColor: rawTheme.palette.primary1Color
+	      },
+	      snackbar: {
+	        textColor: rawTheme.palette.alternateTextColor,
+	        backgroundColor: rawTheme.palette.textColor,
+	        actionColor: rawTheme.palette.accent1Color
+	      },
+	      table: {
+	        backgroundColor: rawTheme.palette.canvasColor
+	      },
+	      tableHeader: {
+	        borderColor: rawTheme.palette.borderColor
+	      },
+	      tableHeaderColumn: {
+	        textColor: rawTheme.palette.primary3Color,
+	        height: 56,
+	        spacing: 24
+	      },
+	      tableFooter: {
+	        borderColor: rawTheme.palette.borderColor,
+	        textColor: rawTheme.palette.primary3Color
+	      },
+	      tableRow: {
+	        hoverColor: rawTheme.palette.accent2Color,
+	        stripeColor: ColorManipulator.lighten(rawTheme.palette.primary1Color, 0.55),
+	        selectedColor: rawTheme.palette.borderColor,
+	        textColor: rawTheme.palette.textColor,
+	        borderColor: rawTheme.palette.borderColor
+	      },
+	      tableRowColumn: {
+	        height: 48,
+	        spacing: 24
+	      },
+	      timePicker: {
+	        color: rawTheme.palette.alternateTextColor,
+	        textColor: rawTheme.palette.accent3Color,
+	        accentColor: rawTheme.palette.primary1Color,
+	        clockColor: rawTheme.palette.primary3Color,
+	        selectColor: rawTheme.palette.primary2Color,
+	        selectTextColor: rawTheme.palette.alternateTextColor
+	      },
+	      toggle: {
+	        thumbOnColor: rawTheme.palette.primary1Color,
+	        thumbOffColor: rawTheme.palette.accent2Color,
+	        thumbDisabledColor: rawTheme.palette.borderColor,
+	        thumbRequiredColor: rawTheme.palette.primary1Color,
+	        trackOnColor: ColorManipulator.fade(rawTheme.palette.primary1Color, 0.5),
+	        trackOffColor: rawTheme.palette.primary3Color,
+	        trackDisabledColor: rawTheme.palette.primary3Color,
+	        labelColor: rawTheme.palette.textColor,
+	        labelDisabledColor: rawTheme.palette.disabledColor
+	      },
+	      toolbar: {
+	        backgroundColor: ColorManipulator.darken(rawTheme.palette.accent2Color, 0.05),
+	        height: 56,
+	        titleFontSize: 20,
+	        iconColor: 'rgba(0, 0, 0, .40)',
+	        separatorColor: 'rgba(0, 0, 0, .175)',
+	        menuHoverColor: 'rgba(0, 0, 0, .10)'
+	      },
+	      tabs: {
+	        backgroundColor: rawTheme.palette.primary1Color,
+	        textColor: ColorManipulator.fade(rawTheme.palette.alternateTextColor, 0.6),
+	        selectedTextColor: rawTheme.palette.alternateTextColor
+	      },
+	      textField: {
+	        textColor: rawTheme.palette.textColor,
+	        hintColor: rawTheme.palette.disabledColor,
+	        floatingLabelColor: rawTheme.palette.textColor,
+	        disabledTextColor: rawTheme.palette.disabledColor,
+	        errorColor: Colors.red500,
+	        focusColor: rawTheme.palette.primary1Color,
+	        backgroundColor: 'transparent',
+	        borderColor: rawTheme.palette.borderColor
+	      },
+	      isRtl: false
+	    };
+
+	    //add properties to objects inside 'returnObj' that depend on existing properties
+	    returnObj.flatButton.disabledTextColor = ColorManipulator.fade(returnObj.flatButton.textColor, 0.3);
+	    returnObj.raisedButton.disabledColor = ColorManipulator.darken(returnObj.raisedButton.color, 0.1);
+	    returnObj.raisedButton.disabledTextColor = ColorManipulator.fade(returnObj.raisedButton.textColor, 0.3);
+	    returnObj.toggle.trackRequiredColor = ColorManipulator.fade(returnObj.toggle.thumbRequiredColor, 0.5);
+
+	    //append the raw theme object to 'returnObj'
+	    returnObj.rawTheme = rawTheme;
+
+	    //set 'static' key as true (by default) on return object. This is to support the ContextPure mixin.
+	    returnObj['static'] = true;
+
+	    return returnObj;
+	  },
+
+	  //functions to modify properties of raw theme, namely spacing, palette
+	  //and font family. These functions use the React update immutability helper
+	  //to create a new object for the raw theme, and return a new MUI theme object
+
+	  //function to modify the spacing of the raw theme. This function recomputes
+	  //the MUI theme and returns it based on the new theme.
+	  modifyRawThemeSpacing: function modifyRawThemeSpacing(muiTheme, newSpacing) {
+	    var newRawTheme = update(muiTheme.rawTheme, { spacing: { $set: newSpacing } });
+	    return this.getMuiTheme(newRawTheme);
+	  },
+
+	  //function to modify the palette of the raw theme. This function recomputes
+	  //the MUI theme and returns it based on the new raw theme.
+	  //keys inside 'newPalette' override values for existing keys in palette
+	  modifyRawThemePalette: function modifyRawThemePalette(muiTheme, newPaletteKeys) {
+	    var newPalette = Extend(muiTheme.rawTheme.palette, newPaletteKeys);
+	    var newRawTheme = update(muiTheme.rawTheme, { palette: { $set: newPalette } });
+	    return this.getMuiTheme(newRawTheme);
+	  },
+
+	  //function to modify the font family of the raw theme. This function recomputes
+	  //the MUI theme and returns it based on the new raw theme.
+	  modifyRawThemeFontFamily: function modifyRawThemeFontFamily(muiTheme, newFontFamily) {
+	    var newRawTheme = update(muiTheme.rawTheme, { fontFamily: { $set: newFontFamily } });
+	    return this.getMuiTheme(newRawTheme);
+	  }
+
+	};
+
+/***/ },
+/* 191 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	function isObject(obj) {
+	  return typeof obj === 'object' && obj !== null;
+	}
+
+	/**
+	*  A recursive merge between two objects.
+	*
+	*  @param base     - the object whose properties are to be overwritten. It
+	*                    should be either the root level or some nested level.
+	*  @param override - an object containing properties to be overwritten. It
+	*                    should have the same structure as the object object.
+	*/
+	var extend = function extend(base, override) {
+
+	  var mergedObject = {};
+
+	  //Loop through each key in the base object
+	  Object.keys(base).forEach(function (key) {
+
+	    var baseProp = base[key];
+	    var overrideProp = undefined;
+
+	    if (isObject(override)) overrideProp = override[key];
+
+	    //Recursive call extend if the prop is another object, else just copy it over
+	    mergedObject[key] = isObject(baseProp) && !Array.isArray(baseProp) ? extend(baseProp, overrideProp) : baseProp;
+	  });
+
+	  //Loop through each override key and override the props in the
+	  //base object
+	  if (isObject(override)) {
+
+	    Object.keys(override).forEach(function (overrideKey) {
+
+	      var overrideProp = override[overrideKey];
+
+	      //Only copy over props that are not objects
+	      if (!isObject(overrideProp) || Array.isArray(overrideProp)) {
+	        mergedObject[overrideKey] = overrideProp;
+	      }
+	    });
+	  }
+
+	  return mergedObject;
+	};
+
+	module.exports = extend;
+
+/***/ },
+/* 192 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var PureRenderMixin = __webpack_require__(160);
-	var ReactTransitionGroup = __webpack_require__(190);
-	var StylePropable = __webpack_require__(163);
-	var Dom = __webpack_require__(195);
-	var ImmutabilityHelper = __webpack_require__(164);
-	var CircleRipple = __webpack_require__(196);
+	var PureRenderMixin = __webpack_require__(174);
+	var ReactTransitionGroup = __webpack_require__(184);
+	var StylePropable = __webpack_require__(161);
+	var Dom = __webpack_require__(193);
+	var ImmutabilityHelper = __webpack_require__(162);
+	var CircleRipple = __webpack_require__(194);
 
 	var TouchRipple = React.createClass({
 	  displayName: 'TouchRipple',
@@ -23126,7 +23011,7 @@
 	module.exports = TouchRipple;
 
 /***/ },
-/* 195 */
+/* 193 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -23203,7 +23088,7 @@
 	};
 
 /***/ },
-/* 196 */
+/* 194 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -23214,11 +23099,11 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var PureRenderMixin = __webpack_require__(160);
-	var StylePropable = __webpack_require__(163);
-	var AutoPrefix = __webpack_require__(168);
-	var Transitions = __webpack_require__(172);
-	var Colors = __webpack_require__(174);
+	var PureRenderMixin = __webpack_require__(174);
+	var StylePropable = __webpack_require__(161);
+	var AutoPrefix = __webpack_require__(166);
+	var Transitions = __webpack_require__(169);
+	var Colors = __webpack_require__(172);
 
 	var CircleRipple = React.createClass({
 	  displayName: 'CircleRipple',
@@ -23305,6 +23190,131 @@
 	});
 
 	module.exports = CircleRipple;
+
+/***/ },
+/* 195 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+	var React = __webpack_require__(1);
+	var PureRenderMixin = __webpack_require__(174);
+	var StylePropable = __webpack_require__(161);
+	var PropTypes = __webpack_require__(196);
+	var Transitions = __webpack_require__(169);
+	var DefaultRawTheme = __webpack_require__(188);
+	var ThemeManager = __webpack_require__(190);
+
+	var Paper = React.createClass({
+	  displayName: 'Paper',
+
+	  mixins: [PureRenderMixin, StylePropable],
+
+	  contextTypes: {
+	    muiTheme: React.PropTypes.object
+	  },
+
+	  //for passing default theme context to children
+	  childContextTypes: {
+	    muiTheme: React.PropTypes.object
+	  },
+
+	  getChildContext: function getChildContext() {
+	    return {
+	      muiTheme: this.state.muiTheme
+	    };
+	  },
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      muiTheme: this.context.muiTheme ? this.context.muiTheme : ThemeManager.getMuiTheme(DefaultRawTheme)
+	    };
+	  },
+
+	  //to update theme inside state whenever a new theme is passed down
+	  //from the parent / owner using context
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps, nextContext) {
+	    var newMuiTheme = nextContext.muiTheme ? nextContext.muiTheme : this.state.muiTheme;
+	    this.setState({ muiTheme: newMuiTheme });
+	  },
+
+	  propTypes: {
+	    circle: React.PropTypes.bool,
+	    rounded: React.PropTypes.bool,
+	    transitionEnabled: React.PropTypes.bool,
+	    zDepth: PropTypes.zDepth
+	  },
+
+	  getDefaultProps: function getDefaultProps() {
+	    return {
+	      circle: false,
+	      rounded: true,
+	      transitionEnabled: true,
+	      zDepth: 1
+	    };
+	  },
+
+	  render: function render() {
+	    var _props = this.props;
+	    var children = _props.children;
+	    var circle = _props.circle;
+	    var rounded = _props.rounded;
+	    var style = _props.style;
+	    var transitionEnabled = _props.transitionEnabled;
+	    var zDepth = _props.zDepth;
+
+	    var other = _objectWithoutProperties(_props, ['children', 'circle', 'rounded', 'style', 'transitionEnabled', 'zDepth']);
+
+	    var styles = {
+	      backgroundColor: this.state.muiTheme.paper.backgroundColor,
+	      transition: transitionEnabled && Transitions.easeOut(),
+	      boxSizing: 'border-box',
+	      fontFamily: this.state.muiTheme.rawTheme.fontFamily,
+	      WebkitTapHighlightColor: 'rgba(0,0,0,0)',
+	      boxShadow: this._getZDepthShadows(zDepth),
+	      borderRadius: circle ? '50%' : rounded ? '2px' : '0px'
+	    };
+
+	    return React.createElement(
+	      'div',
+	      _extends({}, other, { style: this.prepareStyles(styles, style) }),
+	      children
+	    );
+	  },
+
+	  _getZDepthShadows: function _getZDepthShadows(zDepth) {
+	    var shadows = [null, '0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24)', '0 3px 10px rgba(0, 0, 0, 0.16), 0 3px 10px rgba(0, 0, 0, 0.23)', '0 10px 30px rgba(0, 0, 0, 0.19), 0 6px 10px rgba(0, 0, 0, 0.23)', '0 14px 45px rgba(0, 0, 0, 0.25), 0 10px 18px rgba(0, 0, 0, 0.22)', '0 19px 60px rgba(0, 0, 0, 0.30), 0 15px 20px rgba(0, 0, 0, 0.22)'];
+
+	    return shadows[zDepth];
+	  }
+
+	});
+
+	module.exports = Paper;
+
+/***/ },
+/* 196 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+
+	module.exports = {
+
+	  corners: React.PropTypes.oneOf(['bottom-left', 'bottom-right', 'top-left', 'top-right']),
+
+	  cornersAndCenter: React.PropTypes.oneOf(['bottom-center', 'bottom-left', 'bottom-right', 'top-center', 'top-left', 'top-right']),
+
+	  stringOrNumber: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.number]),
+
+	  zDepth: React.PropTypes.oneOf([0, 1, 2, 3, 4, 5])
+
+	};
 
 /***/ },
 /* 197 */
@@ -23636,13 +23646,13 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var ColorManipulator = __webpack_require__(175);
-	var StylePropable = __webpack_require__(163);
-	var Transitions = __webpack_require__(172);
+	var ColorManipulator = __webpack_require__(170);
+	var StylePropable = __webpack_require__(161);
+	var Transitions = __webpack_require__(169);
 	var UniqueId = __webpack_require__(203);
 	var EnhancedTextarea = __webpack_require__(204);
-	var DefaultRawTheme = __webpack_require__(173);
-	var ThemeManager = __webpack_require__(177);
+	var DefaultRawTheme = __webpack_require__(188);
+	var ThemeManager = __webpack_require__(190);
 	var ContextPure = __webpack_require__(205);
 
 	/**
@@ -24099,9 +24109,9 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var StylePropable = __webpack_require__(163);
-	var DefaultRawTheme = __webpack_require__(173);
-	var ThemeManager = __webpack_require__(177);
+	var StylePropable = __webpack_require__(161);
+	var DefaultRawTheme = __webpack_require__(188);
+	var ThemeManager = __webpack_require__(190);
 
 	var rowsHeight = 24;
 
@@ -24445,12 +24455,12 @@
 
 	var React = __webpack_require__(1);
 	var EnhancedSwitch = __webpack_require__(209);
-	var StylePropable = __webpack_require__(163);
-	var Transitions = __webpack_require__(172);
+	var StylePropable = __webpack_require__(161);
+	var Transitions = __webpack_require__(169);
 	var CheckboxOutline = __webpack_require__(213);
 	var CheckboxChecked = __webpack_require__(215);
-	var DefaultRawTheme = __webpack_require__(173);
-	var ThemeManager = __webpack_require__(177);
+	var DefaultRawTheme = __webpack_require__(188);
+	var ThemeManager = __webpack_require__(190);
 
 	var Checkbox = React.createClass({
 	  displayName: 'Checkbox',
@@ -24630,17 +24640,17 @@
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(158);
-	var KeyCode = __webpack_require__(187);
-	var StylePropable = __webpack_require__(163);
-	var Transitions = __webpack_require__(172);
+	var KeyCode = __webpack_require__(181);
+	var StylePropable = __webpack_require__(161);
+	var Transitions = __webpack_require__(169);
 	var UniqueId = __webpack_require__(203);
 	var WindowListenable = __webpack_require__(210);
 	var ClearFix = __webpack_require__(211);
-	var FocusRipple = __webpack_require__(188);
-	var TouchRipple = __webpack_require__(194);
-	var Paper = __webpack_require__(159);
-	var DefaultRawTheme = __webpack_require__(173);
-	var ThemeManager = __webpack_require__(177);
+	var FocusRipple = __webpack_require__(182);
+	var TouchRipple = __webpack_require__(192);
+	var Paper = __webpack_require__(195);
+	var DefaultRawTheme = __webpack_require__(188);
+	var ThemeManager = __webpack_require__(190);
 
 	var EnhancedSwitch = React.createClass({
 	  displayName: 'EnhancedSwitch',
@@ -25058,7 +25068,7 @@
 
 	'use strict';
 
-	var Events = __webpack_require__(186);
+	var Events = __webpack_require__(180);
 
 	module.exports = {
 
@@ -25094,9 +25104,9 @@
 
 	var React = __webpack_require__(1);
 	var BeforeAfterWrapper = __webpack_require__(212);
-	var StylePropable = __webpack_require__(163);
-	var DefaultRawTheme = __webpack_require__(173);
-	var ThemeManager = __webpack_require__(177);
+	var StylePropable = __webpack_require__(161);
+	var DefaultRawTheme = __webpack_require__(188);
+	var ThemeManager = __webpack_require__(190);
 
 	var ClearFix = React.createClass({
 	  displayName: 'ClearFix',
@@ -25169,10 +25179,10 @@
 	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
 	var React = __webpack_require__(1);
-	var StylePropable = __webpack_require__(163);
-	var AutoPrefix = __webpack_require__(168);
-	var DefaultRawTheme = __webpack_require__(173);
-	var ThemeManager = __webpack_require__(177);
+	var StylePropable = __webpack_require__(161);
+	var AutoPrefix = __webpack_require__(166);
+	var DefaultRawTheme = __webpack_require__(188);
+	var ThemeManager = __webpack_require__(190);
 
 	/**
 	 *  BeforeAfterWrapper
@@ -25301,7 +25311,7 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var PureRenderMixin = __webpack_require__(160);
+	var PureRenderMixin = __webpack_require__(174);
 	var SvgIcon = __webpack_require__(214);
 
 	var ToggleCheckBoxOutlineBlank = React.createClass({
@@ -25332,10 +25342,10 @@
 	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
 	var React = __webpack_require__(1);
-	var StylePropable = __webpack_require__(163);
-	var Transitions = __webpack_require__(172);
-	var DefaultRawTheme = __webpack_require__(173);
-	var ThemeManager = __webpack_require__(177);
+	var StylePropable = __webpack_require__(161);
+	var Transitions = __webpack_require__(169);
+	var DefaultRawTheme = __webpack_require__(188);
+	var ThemeManager = __webpack_require__(190);
 
 	var SvgIcon = React.createClass({
 	  displayName: 'SvgIcon',
@@ -25447,7 +25457,7 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var PureRenderMixin = __webpack_require__(160);
+	var PureRenderMixin = __webpack_require__(174);
 	var SvgIcon = __webpack_require__(214);
 
 	var ToggleCheckBox = React.createClass({
