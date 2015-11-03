@@ -10,9 +10,7 @@ module.exports = (function() {
   }
 
   function storeItems(items, callback) {
-    if (items && items.length && items.map) {
-      Parse.Object.saveAll(items.map(prepareDbItem), callback);
-    }
+    Parse.Object.saveAll((items || []).map(prepareDbItem), callback);
     return items;
   }
 
