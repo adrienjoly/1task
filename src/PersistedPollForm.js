@@ -38,6 +38,7 @@ module.exports = (function(){
         if (error) {
           console.error('Fetch error:', error);
         } else {
+          console.log('=>', items);
           _this.setState({ options: items});
         }
       }, _this.props.defaultItems);
@@ -63,10 +64,13 @@ module.exports = (function(){
       var selectedItems = getSelectedItems(form);
       this.refs.pollForm.setState({ disabled: true });
       this.props.setLoading(true);
+      console.log('Saving new selected items...');
       itemStore.syncItems(selectedItems, function() {
+        console.log('=>', arguments);
+        console.log('Subscribing to Mailchimp newsletter...');
         form.submit(selectedItems);
         // => will redirect to other page
-        // ... or what ?
+        // ... or what ? (TODO)
       });
     }
 

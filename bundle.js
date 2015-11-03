@@ -76,7 +76,7 @@
 	    form.realSubmit = form.submit;
 	    form.submit = function(selectedItems) {
 	      document.getElementById('js-merged-problems').value = selectedItems.join('\n');
-	      //form.realSubmit();
+	      form.realSubmit(); // redirects to mailchimp confirmation page
 	      /*
 	      // AJAX code for testing with devtools' network tab:
 	      var xhr = new XMLHttpRequest;
@@ -19733,6 +19733,7 @@
 	        if (error) {
 	          console.error('Fetch error:', error);
 	        } else {
+	          console.log('=>', items);
 	          _this.setState({ options: items});
 	        }
 	      }, _this.props.defaultItems);
@@ -19758,10 +19759,13 @@
 	      var selectedItems = getSelectedItems(form);
 	      this.refs.pollForm.setState({ disabled: true });
 	      this.props.setLoading(true);
+	      console.log('Saving new selected items...');
 	      itemStore.syncItems(selectedItems, function() {
+	        console.log('=>', arguments);
+	        console.log('Subscribing to Mailchimp newsletter...');
 	        form.submit(selectedItems);
 	        // => will redirect to other page
-	        // ... or what ?
+	        // ... or what ? (TODO)
 	      });
 	    }
 
@@ -25613,9 +25617,7 @@
 	  }
 
 	  function storeItems(items, callback) {
-	    if (items && items.length && items.map) {
-	      Parse.Object.saveAll(items.map(prepareDbItem), callback);
-	    }
+	    Parse.Object.saveAll((items || []).map(prepareDbItem), callback);
 	    return items;
 	  }
 

@@ -30,7 +30,7 @@
     form.realSubmit = form.submit;
     form.submit = function(selectedItems) {
       document.getElementById('js-merged-problems').value = selectedItems.join('\n');
-      //form.realSubmit();
+      form.realSubmit(); // redirects to mailchimp confirmation page
       /*
       // AJAX code for testing with devtools' network tab:
       var xhr = new XMLHttpRequest;
