@@ -22,8 +22,10 @@ module.exports = (function(){
     render() {
       return React.createElement('div', { className: 'react-poll-form' },
         React.createElement(Poll, {
-          options: this.props.options
+          options: this.props.options,
+          labelStyle: { color: 'auto' }
         }),
+        React.createElement('p', {}, 'We\'ll let you know when we\'ve solved these problems:'),
         React.createElement('div', { className: 'mt-table--full' },
           React.createElement('div', { className: 'mt-td--centered-vertical site-user-signup__col-1' },
             React.createElement(EmailField, {
