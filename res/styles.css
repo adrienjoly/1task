@@ -80,6 +80,18 @@ section {
   padding: 10px;
 }
 
+#app {
+  max-height: 0; /* updated by index.js, after react app is rendered. for transition. */
+  -webkit-transition: max-height 0.3s ease-out;
+  transition: max-height 0.3s ease-out;
+}
+
+#app > div {
+  background-color: white;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 1px 16px;
+}
+
 .floating-signup {
   position: relative;
   padding: 10px 20px;
