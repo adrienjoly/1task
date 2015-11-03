@@ -20,31 +20,38 @@ module.exports = (function(){
     },
 
     render() {
-      var paperProps = {
-        style: {
-          backgroundColor: 'white',
-          padding: '16px',
-          paddingTop: '1px'
-        }
-      };
-      return React.createElement('div', paperProps,
+      return React.createElement('div', { className: 'react-poll-form' },
         React.createElement(Poll, {
           options: this.props.options
         }),
-        React.createElement(EmailField, {
-          ref: 'email',
-          name: 'EMAIL',
-          hintText: 'Email',
-          required: true,
-          onValidation: this.onEmailValidation,
-          style: { margin: '20px 0' }
-        }),
-        React.createElement(RaisedButton, {
-          label: 'Submit',
-          primary: true,
-          style: { display: 'block' },
-          onTouchTap: this.state.validEmail ? this.props.onValidSubmit : undefined
-        })
+        React.createElement('div', { className: 'mt-table--full' },
+          React.createElement('div', { className: 'mt-td--centered-vertical site-user-signup__col-1' },
+            React.createElement(EmailField, {
+              ref: 'email',
+              name: 'EMAIL', // as expected by mailchimp
+              hintText: 'Email',
+              required: true,
+              onValidation: this.onEmailValidation,            
+              style: {
+                display: 'block', // to fill the parent div's width, as defined by the className above
+                margin: '16px 8px',
+                width: 'auto'     // adapt to parent div's width
+              }
+            })
+          ),
+          React.createElement('div', { className: 'mt-td--centered-vertical site-user-signup__col-2' },
+            React.createElement(RaisedButton, {
+              label: 'Submit',
+              primary: true,
+              backgroundColor: '#00a651',
+              style: {
+                display: 'block', // to fill the parent div's width, as defined by the className above
+                margin: '16px 8px'
+              },
+              onTouchTap: this.state.validEmail ? this.props.onValidSubmit : undefined
+            })
+          )
+        )
       );
     },
 
