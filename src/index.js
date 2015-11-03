@@ -24,12 +24,16 @@
     }
   }
 
+  function quote(str) {
+    return '"' + str.replace(/\\/g, '\\\\').replace(/\"/g, '\\\"') + '"';
+  }
+
   // overrides form.submit() for merging selected items into one field, for mailchimp
   var wrappedForm = (function() {
     var form = document.getElementsByTagName('form')[0];
     form.realSubmit = form.submit;
     form.submit = function(selectedItems) {
-      document.getElementById('js-merged-problems').value = selectedItems.join('\n');
+      document.getElementById('js-merged-problems').value = selectedItems.map(quote).join(',\n');
       form.realSubmit(); // redirects to mailchimp confirmation page
       /*
       // AJAX code for testing with devtools' network tab:
