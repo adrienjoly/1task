@@ -90,16 +90,24 @@
     return selected;
   }
 
+  function setLoading(toggle) {
+    document.body.className = (document.body.className || '').replace(/is\-loading/, '');
+    if (toggle) {
+      document.body.className += ' is-loading';
+    }
+  }
+
   function renderApp(options) {
     console.log('renderApp with options:', options);
     var element = React.createElement(PollForm, {
       options: options || [],
       onValidSubmit: function onSubmit() {
         var form = document.getElementsByTagName('form')[0];
-        document.getElementById('js-merged-problems').value = getSelectedItems(form).join('\n');
         var selectedItems = getSelectedItems(form);
         // TODO: disable form
+        setLoading(true);
         itemStore.syncItems(selectedItems, function() {
+          document.getElementById('js-merged-problems').value = selectedItems.join('\n');
           //return form.submit();
           /*
           // AJAX code for testing with devtools' network tab:
@@ -112,7 +120,7 @@
     });
     var appDiv = document.getElementById('app');
     return ReactDOM.render(element, appDiv, function() {
-      document.body.className = document.body.className.replace('is-loading', '');
+      setLoading(false);
       appDiv.style.maxHeight = appDiv.childNodes[0].clientHeight + 'px';
     });
   }
