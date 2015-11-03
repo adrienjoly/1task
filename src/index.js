@@ -10,21 +10,43 @@
   // ___
   // DB code
 
-  Parse.initialize("HAvVzC6nFUCQDskxkOio2sdiFNuWNGi9wgmX6Nwa", "jShePeIRlyKRj4S7lQ7uuktGEQn30b4DZxX7K1pb");
-  var Item = Parse.Object.extend('Item');
+  var itemStore = (function() {
+    Parse.initialize("HAvVzC6nFUCQDskxkOio2sdiFNuWNGi9wgmX6Nwa", "jShePeIRlyKRj4S7lQ7uuktGEQn30b4DZxX7K1pb");
+    var Item = Parse.Object.extend('Item');
 
-  function storeItem(item) {
-    new Item().save(item);//.then(callback);
-    return item;
-  }
+    function storeItem(item) {
+      new Item().save(item);//.then(callback);
+      return item;
+    }
 
-  function storeDefaultItems() {
-    return [
-      { name: 'Tasks accumulate too much' },
-      { name: 'I don\'t know where to start' },
-      { name: 'I keep postponing my deadlines' }
-    ].map(storeItem);
-  }
+    function storeItems(items) {
+      return items.map(storeItem);
+    }
+
+    function renderItem(item) {
+      return { name: item.name || item.get('name') };
+    }
+
+    function fetchItems(callback, defaultItems) {
+      new Parse.Query(Item).find({
+        success: function(items) {
+          items = items.map(renderItem);
+          callback(null, !items.length ? storeItems(defaultItems) : items);
+        },
+        error: function(object, error) {
+          callback(error);
+        }
+      });
+    }
+
+
+    return {
+      fetchItems: fetchItems,
+      syncItems: syncItems
+    };
+
+  })();
+
 
   // ___
   // UI code
@@ -67,18 +89,20 @@
   // ___
   // Main logic
 
+  var DEFAULT_ITEMS = [
+    { name: 'Tasks accumulate too much' },
+    { name: 'I don\'t know where to start' },
+    { name: 'I keep postponing my deadlines' }
+  ];
+
   console.log('Fetching options...');
-  new Parse.Query(Item).find({
-    success: function(items) {
-      items = items.map(function(item){
-        return { name: item.name || item.get('name') };
-      });
-      renderApp(!items.length ? storeDefaultItems() : items);
-    },
-    error: function(object, error) {
+  itemStore.fetchItems(function(error, items) {
+    if (error) {
       renderApp();
       console.error('Fetch error:', error);
+    } else {
+      renderApp(items);
     }
-  });
+  }, DEFAULT_ITEMS);
 
 })();
