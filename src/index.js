@@ -5,8 +5,6 @@
   var ReactDOM = require('react-dom');
   var PersistedPollForm = require('./PersistedPollForm.js');
 
-  // TODO: minify compiled bundle (e.g. use uglify), for production
-
   // Needed for React Developer Tools
   window.React = React;
 
