@@ -33,7 +33,7 @@
     var form = document.getElementsByTagName('form')[0];
     form.realSubmit = form.submit;
     form.submit = function(selectedItems) {
-      analytics.identify({email: form.elements['EMAIL'] });
+      analytics.identify(undefined, { email: form.elements['EMAIL'] });
       analytics.track('Voted', { options: selectedItems });     
       document.getElementById('js-merged-problems').value = selectedItems.map(quote).join(',\n');
       form.realSubmit(); // redirects to mailchimp confirmation page
