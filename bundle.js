@@ -78,22 +78,23 @@
 	  var wrappedForm = (function() {
 	    var form = document.getElementsByTagName('form')[0];
 	    form.realSubmit = form.submit;
-	    function fixedSubmit(selectedItems) {
-	      document.getElementById('js-merged-problems').value = selectedItems.map(quote).join(',\n');
-	      form.realSubmit(); // redirects to mailchimp confirmation page
-	      /*
-	      // AJAX code for testing with devtools' network tab:
-	      var xhr = new XMLHttpRequest;
-	      xhr.open('POST', '/', true);
-	      xhr.send(new FormData(form));
-	      */
-	    }
 	    form.submit = function(selectedItems) {
+	      function fixedSubmit() {
+	        document.getElementById('js-merged-problems').value = selectedItems.map(quote).join(',\n');
+	        form.realSubmit(); // redirects to mailchimp confirmation page
+	        /*
+	        // AJAX code for testing with devtools' network tab:
+	        var xhr = new XMLHttpRequest;
+	        xhr.open('POST', '/', true);
+	        xhr.send(new FormData(form));
+	        */
+	      }
 	      analytics.identify({ email: form.elements['EMAIL'].value }, function() {
 	        analytics.track('Voted', { options: selectedItems }, function() {
-	          fixedSubmit(selectedItems);
+	          setTimeout(fixedSubmit, 100);
 	        });
 	      });
+	      setTimeout(fixedSubmit, 2000); // just in case the analytics don't respond in time (timeout)
 	    };
 	    return form;
 	  })();
