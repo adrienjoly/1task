@@ -103,6 +103,7 @@
 	  });
 
 	  return ReactDOM.render(element, appDiv, function whenRendered() {
+	    var ctn = document.getElementById('container');
 	    appDiv.style.maxHeight = appDiv.childNodes[0].clientHeight + 'px';
 	  });
 
