@@ -3,7 +3,7 @@ module.exports = (function(){
   var React = require('react');
   var RaisedButton = require('material-ui/lib/raised-button');
   var injectTapEventPlugin = require('react-tap-event-plugin');
-  var EmailField = require('./EmailField.js');
+  var EmailField = require('./EmailField.jsx');
   var Poll = require('react-1poll');
 
   // Needed for onTouchTap
