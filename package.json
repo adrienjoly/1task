@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "description": "1task's landing page, with a poll.",
   "scripts": {
+    "build-jsx-prod": "webpack --config webpack-jsx.config.js --progress --colors -p",
+    "build-jsx":      "webpack --config webpack-jsx.config.js --progress --colors",
     "build-prod": "webpack ./src/index.js ./bundle.js --progress --colors -p",
     "build-dev":  "webpack ./src/index.js ./bundle.js --progress --colors -d --watch",
     "build": "webpack ./src/index.js ./bundle.js --progress --colors",
@@ -22,6 +24,8 @@
   },
   "homepage": "https://github.com/adrienjoly/1task#readme",
   "devDependencies": {
+    "jsx-loader": "^0.13.2",
+    "react": "^0.14.2",
     "react-1poll": "0.0.8",
     "webpack": "^1.12.2"
   }
