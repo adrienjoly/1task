@@ -78,9 +78,7 @@
 	  var wrappedForm = (function() {
 	    var form = document.getElementsByTagName('form')[0];
 	    form.realSubmit = form.submit;
-	    form.submit = function(selectedItems) {
-	      analytics.identify({ email: form.elements['EMAIL'].value });
-	      analytics.track('Voted', { options: selectedItems });     
+	    function fixedSubmit(selectedItems) {
 	      document.getElementById('js-merged-problems').value = selectedItems.map(quote).join(',\n');
 	      form.realSubmit(); // redirects to mailchimp confirmation page
 	      /*
@@ -89,6 +87,13 @@
 	      xhr.open('POST', '/', true);
 	      xhr.send(new FormData(form));
 	      */
+	    }
+	    form.submit = function(selectedItems) {
+	      analytics.identify({ email: form.elements['EMAIL'].value }, function() {
+	        analytics.track('Voted', { options: selectedItems }, function() {
+	          fixedSubmit(selectedItems);
+	        });
+	      });
 	    };
 	    return form;
 	  })();
