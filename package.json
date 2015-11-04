@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "description": "1task's landing page, with a poll.",
   "scripts": {
+    "build-prod": "webpack ./src/index.js ./bundle.js --progress --colors -p",
+    "build-dev":  "webpack ./src/index.js ./bundle.js --progress --colors -d --watch",
     "build": "webpack ./src/index.js ./bundle.js --progress --colors",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,7 +22,7 @@
   },
   "homepage": "https://github.com/adrienjoly/1task#readme",
   "devDependencies": {
-    "react-1poll": "0.0.7",
+    "react-1poll": "0.0.8",
     "webpack": "^1.12.2"
   }
 }

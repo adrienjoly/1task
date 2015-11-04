@@ -12,14 +12,14 @@ module.exports = (function(){
 
   var PollForm = React.createClass({
 
-    getInitialState() {
+    getInitialState: function() {
       return {
         disabled: false,
         validEmail: false
       };
     },
 
-    render() {
+    render: function() {
       return React.createElement('div', { className: 'react-poll-form' },
         React.createElement(Poll, {
           options: this.props.options,
@@ -59,11 +59,11 @@ module.exports = (function(){
       );
     },
 
-    onInvalidSubmit() {
+    onInvalidSubmit: function() {
       this.refs.email.setState({ forceHint: true });
     },
 
-    onEmailValidation() {
+    onEmailValidation: function() {
       this.setState({ validEmail: this.refs.email.state.valid });
     }
 

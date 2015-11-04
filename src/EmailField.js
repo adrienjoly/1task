@@ -7,7 +7,7 @@ module.exports = (function(){
 
   var EmailField = React.createClass({
 
-    getInitialState() {
+    getInitialState: function() {
       return {
         forceHint: false,
         value: '',
@@ -16,7 +16,7 @@ module.exports = (function(){
       };
     },
 
-    render() {
+    render: function() {
       return React.createElement(TextField, {
         type: 'email',
         name: this.props.name,
@@ -30,11 +30,11 @@ module.exports = (function(){
       });
     },
 
-    _hasToShowHint() {
+    _hasToShowHint: function() {
       return this.state.forceHint || (this.state.value.length && !this.state.valid);
     },
 
-    _handleChange(evt) {
+    _handleChange: function(evt) {
       this.setState({
         forceHint: false,
         value: evt.target.value,

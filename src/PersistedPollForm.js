@@ -16,7 +16,7 @@ module.exports = (function(){
 
   var PersistedPollForm = React.createClass({
 
-    getDefaultProps() {
+    getDefaultProps: function() {
       return {
         defaultItems: [],
         setLoading: null,
@@ -24,13 +24,13 @@ module.exports = (function(){
       };
     },
 
-    getInitialState() {
+    getInitialState: function() {
       return {
         options: this.props.defaultItems
       };
     },
 
-    componentWillMount() {
+    componentWillMount: function() {
       console.log('Fetching options from Parse DB...');
       var _this = this;
       itemStore.fetchItems(function(error, items) {
@@ -44,11 +44,11 @@ module.exports = (function(){
       }, _this.props.defaultItems);
     },
 
-    componentDidUpdate() {
+    componentDidUpdate: function() {
       this.props.onUpdate && this.props.onUpdate.call(this, arguments);
     },
 
-    render() {
+    render: function() {
       return React.createElement(PollForm, {
         ref: 'pollForm',
         options: this.state.options,
@@ -57,13 +57,13 @@ module.exports = (function(){
       });
     },
 
-    onNewOption(newOption) {
+    onNewOption: function(newOption) {
       this.setState({
         options: this.state.options.concat([ newOption ])
       });
     },
 
-    onValidSubmit() {
+    onValidSubmit: function() {
       var form = this.props.form;
       var selectedItems = getSelectedItems(form);
       this.refs.pollForm.setState({ disabled: true });
