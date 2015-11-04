@@ -53,12 +53,14 @@
   var element = React.createElement(PersistedPollForm, {
     defaultItems: DEFAULT_ITEMS,
     setLoading: setLoading,
-    form: wrappedForm
+    form: wrappedForm,
+    onUpdate: function() {
+      setTimeout(function() {
+        appDiv.style.maxHeight = appDiv.childNodes[0].clientHeight + 'px';
+      });
+    }
   });
 
-  return ReactDOM.render(element, appDiv, function whenRendered() {
-    var ctn = document.getElementById('container');
-    appDiv.style.maxHeight = appDiv.childNodes[0].clientHeight + 'px';
-  });
+  return ReactDOM.render(element, appDiv);
 
 })();

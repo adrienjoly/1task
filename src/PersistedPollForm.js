@@ -44,6 +44,10 @@ module.exports = (function(){
       }, _this.props.defaultItems);
     },
 
+    componentDidUpdate() {
+      this.props.onUpdate && this.props.onUpdate.call(this, arguments);
+    },
+
     render() {
       return React.createElement(PollForm, {
         ref: 'pollForm',

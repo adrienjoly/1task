@@ -69,6 +69,7 @@ h1 {
 
 #app {
   max-height: 0; /* updated by index.js, after react app is rendered. for transition. */
+  overflow: hidden;
   -webkit-transition: max-height 0.3s ease-out;
   transition: max-height 0.3s ease-out;
 }
