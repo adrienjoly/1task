@@ -54,11 +54,12 @@ section {
 body.is-loading .loading-state {
   display: block;
   position: fixed;
-  bottom: 40px;
-  width: 100%;
+  top: 20px;
+  right: 20px;
+  width: 40px;
   height: 40px;
   /* loading animation by Skip Hursh: https://www.behance.net/gallery/10395367/Digg-Reader */
-  background: url(/res/loading.gif) 50% 50% no-repeat;
+  background: url(/res/loading.gif) no-repeat;
   background-size: contain;
 }
 
@@ -87,37 +88,6 @@ h1 {
 #app p {
   margin: 0 8px;
 }
-/*
-.mt-table, .mt-table--full {
-  display: table;
-}
-
-.mt-table--full {
-  width: 100%;
-}
-
-.mt-td,.mt-td--centered-vertical {
-  display: table-cell;
-}
-
-.mt-td--centered-vertical {
-  vertical-align: middle;
-}
-*/
-
-/*
-@media all and (max-width: 767px) {
-  .mt-table, .mt-table--full, .mt-table--centered, .mt-table--full, .mt-td--centered-vertical {
-    display: block;
-  }
-}
-
-@media all and (min-width: 768px) {
-  .user-signup__col-2 {
-    width: 1%;
-  }
-}
-*/
 
 @media all and (min-width:481px) {
   p {
