@@ -1,7 +1,7 @@
 'use strict';
 
 var React = require('react');
-var PollForm = require('./PollForm.js');
+var PollForm = require('./PollForm.jsx');
 var itemStore = require('./itemStore.js');
 
 function getSelectedItems(form) {
