@@ -12,7 +12,6 @@ body {
   min-height: 100%;
   font-family: "Roboto", sans-serif;
   line-height: 1.42857;
-  font-size: 17px;
   background-color: rgba(0,0,0,1);
   color: #FFF;
   word-wrap: normal;
@@ -63,10 +62,6 @@ body.is-loading .loading-state {
   background-size: contain;
 }
 
-h1 {
-  font-size: 40px;
-}
-
 #app {
   max-height: 0; /* updated by index.js, after react app is rendered. for transition. */
   overflow: hidden;
@@ -90,22 +85,20 @@ h1 {
   margin: 0 8px;
 }
 
-@media all and (min-width:481px) {
-  p {
-    font-size: 22px;
-  }
-
-  h1 {
-    font-size: 60px;
-  }
+h1 {
+  font-size: 48px;
 }
 
-@media all and (min-width:769px) {
-  p {
-    font-size: 22px;
-  }
+body {
+  font-size: 18px;
+}
 
+/* smaller text for smaller screens */
+@media all and (max-width: 481px) {
   h1 {
-    font-size: 75px;
+    font-size: 32px;
+  }
+  body {
+    font-size: 16px;
   }
 }
