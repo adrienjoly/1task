@@ -3,7 +3,7 @@
   
   var React = require('react');
   var ReactDOM = require('react-dom');
-  var PersistedPollForm = require('./PersistedPollForm.js');
+  var PersistedPollForm = require('./PersistedPollForm.jsx');
 
   // Needed for React Developer Tools
   window.React = React;

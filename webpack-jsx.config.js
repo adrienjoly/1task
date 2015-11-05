@@ -17,7 +17,7 @@ module.exports = {
           path.resolve(__dirname, 'src')
         ],
         loaders: [
-          'jsx-loader?insertPragma=React.DOM&harmony',
+          'babel-loader'
         ]
       }
     ]

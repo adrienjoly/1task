@@ -6,9 +6,10 @@ module.exports = (function(){
   var REGEX = /^[a-zA-Z0-9+-_]+(\.[_a-zA-Z0-9+]+)*@[a-zA-Z0-9+-_]+(\.[a-zA-Z0-9+-_]+)*(\.[a-zA-Z]+)$/;
 
   return class EmailField extends React.Component {
-
-    getInitialState() {
-      return {
+    
+    constructor(props) {
+      super(props);
+      this.state = {
         forceHint: false,
         value: '',
         focus: false,
@@ -16,7 +17,7 @@ module.exports = (function(){
       };
     }
 
-    render() {
+    render = () => {
       return (
         <TextField
           type='email'
@@ -32,11 +33,11 @@ module.exports = (function(){
       );
     }
 
-    _hasToShowHint() {
+    _hasToShowHint = () => {
       return this.state.forceHint || (this.state.value.length && !this.state.valid);
     }
 
-    _handleChange(evt) {
+    _handleChange = (evt) => {
       this.setState({
         forceHint: false,
         value: evt.target.value,

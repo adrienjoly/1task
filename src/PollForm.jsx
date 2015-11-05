@@ -10,16 +10,17 @@ module.exports = (function(){
   // Can go away when react 1.0 release, cf https://github.com/zilverline/react-tap-event-plugin
   injectTapEventPlugin();
 
-  return class PollForm extends React.createClass {
+  return class PollForm extends React.Component {
 
-    getInitialState() {
-      return {
+    constructor(props) {
+      super(props);
+      this.state = {
         disabled: false,
         validEmail: false
       };
     }
 
-    render() {
+    render = () => {
       return (
         <div className='react-poll-form'>
           <Poll
@@ -34,7 +35,7 @@ module.exports = (function(){
                 ref='email'
                 name='EMAIL' // as expected by mailchimp
                 hintText='Email'
-                required='true'
+                required={true}
                 onValidation={this.onEmailValidation}
                 style={{
                   display: 'block', // to fill the parent div's width, as defined by the className above
@@ -47,7 +48,7 @@ module.exports = (function(){
               <RaisedButton
                 disabled={this.state.disabled}
                 label='Submit'
-                primary=true
+                primary={true}
                 backgroundColor='#00a651'
                 style={{
                   display: 'block', // to fill the parent div's width, as defined by the className above
@@ -61,11 +62,11 @@ module.exports = (function(){
       );
     }
 
-    onInvalidSubmit() {
+    onInvalidSubmit = () => {
       this.refs.email.setState({ forceHint: true });
     }
 
-    onEmailValidation() {
+    onEmailValidation = () => {
       this.setState({ validEmail: this.refs.email.state.valid });
     }
 
