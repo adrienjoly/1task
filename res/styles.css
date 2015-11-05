@@ -63,10 +63,12 @@ body.is-loading .loading-state {
 }
 
 #app {
-  max-height: 0; /* updated by index.js, after react app is rendered. for transition. */
+  /* code for max-height transition */
+  max-height: 0; /* updated by index.js, after react app is rendered. */
   overflow: hidden;
   -webkit-transition: max-height 0.3s ease-out;
   transition: max-height 0.3s ease-out;
+  /* end of transition code */
 }
 
 #app > div {
