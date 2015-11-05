@@ -13,12 +13,8 @@ module.exports = {
     loaders: [
       {
         test: /\.jsx?$/,
-        include: [
-          path.resolve(__dirname, 'src')
-        ],
-        loaders: [
-          'babel-loader'
-        ]
+        include: path.resolve(__dirname, 'src'),
+        loader: 'babel-loader',
       }
     ]
   }

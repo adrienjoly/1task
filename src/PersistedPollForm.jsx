@@ -22,7 +22,7 @@ class PersistedPollForm extends React.Component {
     //form: null
   };
 
-  constructor = (props) => {
+  constructor(props) {
     super(props);
     this.state = {
       options: this.props.defaultItems
@@ -77,4 +77,13 @@ class PersistedPollForm extends React.Component {
   }
 
 };
+/*
+PersistedPollForm.getDefaultProps = function() {
+  return {
+    defaultItems: [],
+    setLoading: null,
+    form: null
+  };
+};
+*/
 module.exports = PersistedPollForm;
