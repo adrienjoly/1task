@@ -63,6 +63,7 @@ body.is-loading .loading-state {
 }
 
 #app {
+  margin: 24px 0;
   /* code for max-height transition */
   max-height: 0; /* updated by index.js, after react app is rendered. */
   overflow: hidden;
@@ -89,16 +90,18 @@ body.is-loading .loading-state {
 
 h1 {
   font-size: 48px;
+  margin: 32px 0;
 }
 
 body {
   font-size: 18px;
 }
 
-/* smaller text for smaller screens */
+/* smaller text and margins for smaller screens */
 @media all and (max-width: 481px) {
   h1 {
     font-size: 32px;
+    margin: 16px 0;
   }
   body {
     font-size: 16px;
