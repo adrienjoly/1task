@@ -30,8 +30,8 @@ module.exports = (function(){
             onNewOption={this.props.onNewOption}
           />
           <p>We'll let you know when we've solved these problems:</p>
-          <div className='mt-table--full'>
-            <div className='mt-td--centered-vertical site-user-signup__col-1'>
+          <div>
+            <div>
               <EmailField
                 ref='email'
                 name='EMAIL' // as expected by mailchimp
@@ -39,21 +39,20 @@ module.exports = (function(){
                 required={true}
                 onValidation={this.onEmailValidation}
                 style={{
-                  display: 'block', // to fill the parent div's width, as defined by the className above
-                  margin: '16px 8px',
-                  width: 'auto'     // adapt to parent div's width
+                  display: 'block', // to fill the parent div's width
+                  width: 'auto',
+                  marginBottom: '16px'
                 }}
               />
             </div>
-            <div className='mt-td--centered-vertical site-user-signup__col-2'>
+            <div>
               <RaisedButton
                 disabled={this.state.disabled}
                 label='Submit'
                 primary={true}
                 backgroundColor='#00a651'
                 style={{
-                  display: 'block', // to fill the parent div's width, as defined by the className above
-                  margin: '16px 8px'
+                  display: 'block', // to fill the parent div's width
                 }}
                 onTouchTap={this.state.validEmail ? this.props.onValidSubmit : this.onInvalidSubmit}
               />
