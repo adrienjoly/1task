@@ -1,5 +1,5 @@
 module.exports = (function() {
-  Parse.initialize("HAvVzC6nFUCQDskxkOio2sdiFNuWNGi9wgmX6Nwa", "jShePeIRlyKRj4S7lQ7uuktGEQn30b4DZxX7K1pb");
+  Parse.initialize('HAvVzC6nFUCQDskxkOio2sdiFNuWNGi9wgmX6Nwa', 'jShePeIRlyKRj4S7lQ7uuktGEQn30b4DZxX7K1pb');
   var Item = Parse.Object.extend('Item');
   var _cache = []; // cache of items, as: [ { name: String } ]
 
