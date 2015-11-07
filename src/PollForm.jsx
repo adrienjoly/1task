@@ -23,6 +23,7 @@ module.exports = (function(){
     render = () => {
       return (
         <div className='react-poll-form'>
+          <p>What's the biggest problem(s) that prevent you from being more productive using ToDo-lists?</p>
           <Poll
             options={this.props.options}
             labelStyle={{ color: 'auto' }}
