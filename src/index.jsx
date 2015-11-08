@@ -26,30 +26,26 @@
     return '"' + str.replace(/\\/g, '\\\\').replace(/\"/g, '\\\"') + '"';
   }
 
-  // overrides form.submit() for merging selected items into one field, for mailchimp
-  var wrappedForm = (function() {
+  // merges selected items into one field before mailchimp form submission
+  function submit(selectedItems) {
     var form = document.getElementsByTagName('form')[0];
-    form.realSubmit = form.submit;
-    form.submit = function(selectedItems) {
-      function fixedSubmit() {
-        document.getElementById('js-merged-problems').value = selectedItems.map(quote).join(',\n');
-        form.realSubmit(); // redirects to mailchimp confirmation page
-        /*
-        // AJAX code for testing with devtools' network tab:
-        var xhr = new XMLHttpRequest;
-        xhr.open('POST', '/', true);
-        xhr.send(new FormData(form));
-        */
-      }
-      analytics.identify({ email: form.elements['EMAIL'].value }, function() {
-        analytics.track('Voted', { options: selectedItems }, function() {
-          setTimeout(fixedSubmit, 100);
-        });
+    function actualSubmit() {
+      document.getElementById('js-merged-problems').value = selectedItems.map(quote).join(',\n');
+      form.submit(); // redirects to mailchimp confirmation page
+      /*
+      // AJAX code for testing with devtools' network tab:
+      var xhr = new XMLHttpRequest;
+      xhr.open('POST', '/', true);
+      xhr.send(new FormData(form));
+      */
+    }
+    analytics.identify({ email: form.elements['EMAIL'].value }, function() {
+      analytics.track('Voted', { options: selectedItems }, function() {
+        setTimeout(actualSubmit, 100);
       });
-      setTimeout(fixedSubmit, 2000); // just in case the analytics don't respond in time (timeout)
-    };
-    return form;
-  })();
+    });
+    setTimeout(actualSubmit, 2000); // just in case the analytics don't respond in time (timeout)
+  };
 
   // ___
   // Main logic
@@ -69,7 +65,7 @@
     <PersistedPollForm
       defaultItems={DEFAULT_ITEMS}
       setLoading={setLoading}
-      form={wrappedForm}
+      onSubmit={submit}
       onUpdate={heightTransition}
     />;
 

@@ -56,27 +56,22 @@ class PersistedPollForm extends React.Component {
   }
 
   onValidSubmit = () => {
-    var selectedItems = this.refs.pollForm.state.selectedOptions;
+    // UI action feedback
     this.refs.pollForm.setState({ disabled: true });
     this.props.setLoading(true);
+    // submitting data
     console.log('Saving new selected items...');
-    itemStore.syncItems(selectedItems.map((opt) => opt.name), function() {
+    var selectedItems = this.refs.pollForm.state.selectedOptions.map((opt) => opt.name);
+    console.log('Selected items:', selectedItems);
+    itemStore.syncItems(selectedItems, () => {
       console.log('=>', arguments);
       console.log('Subscribing to Mailchimp newsletter...');
-      this.props.form.submit(selectedItems);
+      this.props.onSubmit(selectedItems);
       // => will redirect to other page
       // ... or what ? (TODO)
     });
   }
 
 };
-/*
-PersistedPollForm.getDefaultProps = function() {
-  return {
-    defaultItems: [],
-    setLoading: null,
-    form: null
-  };
-};
-*/
+
 module.exports = PersistedPollForm;
