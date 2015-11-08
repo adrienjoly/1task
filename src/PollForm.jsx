@@ -32,7 +32,8 @@ module.exports = (function(){
             onSelectionChange={this.onSelectionChange}
           />
           <div style={{ display: this.state.selectedOptions.length ? 'block' : 'none' }}>
-            <p>We'll let you know when we've solved these problems:</p>
+            <p>Thank you for your vote!</p>
+            <p>Enter your email to get our app for free when it's ready:</p>
             <EmailField
               ref='email'
               name='EMAIL' // as expected by mailchimp
