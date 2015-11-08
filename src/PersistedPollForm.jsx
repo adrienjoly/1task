@@ -4,16 +4,6 @@ var React = require('react');
 var PollForm = require('./PollForm.jsx');
 var itemStore = require('./itemStore.js');
 
-function getSelectedItems(form) {
-  var selected = [];
-  for (var i=0; i<form.elements.length; ++i) {
-    if (form.elements[i].name == 'selected' && form.elements[i].checked) {
-      selected.push(form.elements[i].value);
-    }
-  }
-  return selected;
-}
-
 class PersistedPollForm extends React.Component {
 
   static defaultProps: {
@@ -43,6 +33,10 @@ class PersistedPollForm extends React.Component {
     }, _this.props.defaultItems);
   }
 
+  shouldComponentUpdate = (nextProps, nextState) => {
+    return nextProps != this.props || nextState.options != this.state.options;
+  }
+
   componentDidUpdate = () => {
     this.props.onUpdate && this.props.onUpdate.call(this, arguments);
   }
@@ -62,15 +56,14 @@ class PersistedPollForm extends React.Component {
   }
 
   onValidSubmit = () => {
-    var form = this.props.form;
-    var selectedItems = getSelectedItems(form);
+    var selectedItems = this.refs.pollForm.state.selectedOptions;
     this.refs.pollForm.setState({ disabled: true });
     this.props.setLoading(true);
     console.log('Saving new selected items...');
-    itemStore.syncItems(selectedItems, function() {
+    itemStore.syncItems(selectedItems.map((opt) => opt.name), function() {
       console.log('=>', arguments);
       console.log('Subscribing to Mailchimp newsletter...');
-      form.submit(selectedItems);
+      this.props.form.submit(selectedItems);
       // => will redirect to other page
       // ... or what ? (TODO)
     });

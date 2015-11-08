@@ -16,7 +16,7 @@ module.exports = (function(){
       super(props);
       this.state = {
         disabled: false,
-        hasSelectedOptions: false,
+        selectedOptions: [],
         validEmail: false
       };
     }
@@ -31,7 +31,7 @@ module.exports = (function(){
             onNewOption={this.props.onNewOption}
             onSelectionChange={this.onSelectionChange}
           />
-          <div style={{ display: this.state.hasSelectedOptions ? 'block' : 'none' }}>
+          <div style={{ display: this.state.selectedOptions.length ? 'block' : 'none' }}>
             <p>We'll let you know when we've solved these problems:</p>
             <EmailField
               ref='email'
@@ -69,8 +69,7 @@ module.exports = (function(){
     }
 
     onSelectionChange = (selectedOptions) => {
-      this.setState({ hasSelectedOptions: selectedOptions.length > 0 });
-      this.props.onSelectionChange && this.props.onSelectionChange(selectedOptions);
+      this.setState({ selectedOptions: selectedOptions });
     }
 
   }
