@@ -16,6 +16,7 @@ module.exports = (function(){
       super(props);
       this.state = {
         disabled: false,
+        hasSelectedOptions: false,
         validEmail: false
       };
     }
@@ -28,35 +29,32 @@ module.exports = (function(){
             options={this.props.options}
             labelStyle={{ color: 'auto' }}
             onNewOption={this.props.onNewOption}
+            onSelectionChange={this.onSelectionChange}
           />
-          <p>We'll let you know when we've solved these problems:</p>
-          <div>
-            <div>
-              <EmailField
-                ref='email'
-                name='EMAIL' // as expected by mailchimp
-                hintText='Email'
-                required={true}
-                onValidation={this.onEmailValidation}
-                style={{
-                  display: 'block', // to fill the parent div's width
-                  width: 'auto',
-                  marginBottom: '16px'
-                }}
-              />
-            </div>
-            <div>
-              <RaisedButton
-                disabled={this.state.disabled}
-                label='Submit'
-                primary={true}
-                backgroundColor='#00a651'
-                style={{
-                  display: 'block', // to fill the parent div's width
-                }}
-                onTouchTap={this.state.validEmail ? this.props.onValidSubmit : this.onInvalidSubmit}
-              />
-            </div>
+          <div style={{ display: this.state.hasSelectedOptions ? 'block' : 'none' }}>
+            <p>We'll let you know when we've solved these problems:</p>
+            <EmailField
+              ref='email'
+              name='EMAIL' // as expected by mailchimp
+              hintText='Email'
+              required={true}
+              onValidation={this.onEmailValidation}
+              style={{
+                display: 'block', // to fill the parent div's width
+                width: 'auto',
+                marginBottom: '16px'
+              }}
+            />
+            <RaisedButton
+              disabled={this.state.disabled}
+              label='Submit'
+              primary={true}
+              backgroundColor='#00a651'
+              style={{
+                display: 'block', // to fill the parent div's width
+              }}
+              onTouchTap={this.state.validEmail ? this.props.onValidSubmit : this.onInvalidSubmit}
+            />
           </div>
         </div>
       );
@@ -68,6 +66,11 @@ module.exports = (function(){
 
     onEmailValidation = () => {
       this.setState({ validEmail: this.refs.email.state.valid });
+    }
+
+    onSelectionChange = (selectedOptions) => {
+      this.setState({ hasSelectedOptions: selectedOptions.length > 0 });
+      this.props.onSelectionChange && this.props.onSelectionChange(selectedOptions);
     }
 
   }

@@ -60,6 +60,9 @@
     setTimeout(function() {
       appDiv.style.maxHeight = appDiv.childNodes[0].clientHeight + 'px';
     });
+    setTimeout(function() {
+      appDiv.style.maxHeight = 'none';
+    }, 1000);
   }
 
   var element =
