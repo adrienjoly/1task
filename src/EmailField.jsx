@@ -25,7 +25,8 @@ module.exports = (function(){
           valid={this.state.valid}
           aria-required={this.props.required}
           hintText={this.props.hintText}
-          errorText={this._hasToShowHint() ? 'Please enter a valid email address' : ''}
+          errorText={this._renderErrorText()}
+          errorStyle={{color: this._hasToShowHint() ? 'red' : 'green'}}
           onChange={this._handleChange}
           onEnterKeyDown={this.state.valid ? this.props.onValidSubmit : undefined}
           style={this.props.style || { margin: '20px 0' }}
@@ -35,6 +36,14 @@ module.exports = (function(){
 
     _hasToShowHint = () => {
       return this.state.forceHint || (this.state.value.length && !this.state.valid);
+    }
+
+    _renderErrorText = () => {
+      if (this._hasToShowHint()) {
+        return 'Please enter a valid email address';
+      } else if (!this.state.value.length) {
+        return 'We hate spam. We don\'t sell emails. You can unsubscribe anytime.';
+      }
     }
 
     _handleChange = (evt) => {
