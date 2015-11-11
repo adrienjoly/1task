@@ -30,6 +30,21 @@ section {
   position: relative;
 }
 
+.footer {
+  position: fixed;
+  bottom: 0;
+  background-color: black;
+  width: 100%;
+  margin: 0;
+  padding: 8px;
+  text-align: center;
+  color: #bbb;
+}
+
+.footer a {
+  color: #bbb;  
+}
+
 .bg-image {
   position: fixed;
   top: 0;
